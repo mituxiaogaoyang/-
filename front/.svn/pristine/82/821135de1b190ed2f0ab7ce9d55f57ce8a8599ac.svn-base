@@ -1,0 +1,93 @@
+<template>
+	<div class="content-box">
+		<div class="toolbar">
+			<div class="select_list">
+				<span class="label">选择隐患点：</span>
+				<Select v-model="search.val1" style="width:200px">
+					<Option v-for="item in pointsHide" :value="item.value" :key="item.value">{{ item.label }}</Option>
+				</Select>
+			</div>
+			<div class="select_list">
+				<span class="label">选择监测点：</span>
+				<Select v-model="search.val2" style="width:200px">
+					<Option v-for="item in pointsMonitor" :value="item.value" :key="item.value">{{ item.label }}</Option>
+				</Select>
+			</div>
+			<div class="select_list">
+				<span class="label">选择时间：</span>
+				<DatePicker type="daterange" :value='search.val3'  placement="bottom-end" placeholder="Select date" style="width: 200px" @on-change="timeSelect"></DatePicker>
+			</div>
+			 <Button type="primary" class="btn_select">确定</Button>
+		</div>
+		<div class="panel_box">
+			<Tabs value="name0">
+				<TabPane  :label="obj.name" :name="'name'+i" v-for='(obj,i) in panels' :key='obj.id'>
+					<div class="panel_content" v-if='obj.type===1'>
+						<chart-rain :idName="'chart'+i"></chart-rain>
+					</div>
+					<div class="panel_content" v-if='obj.type===2'>
+						<chart-wire :idName="'chart'+i"></chart-wire>
+					</div>
+					<div class="panel_content" v-if='obj.type===3'>
+						<chart-gnss :idName="'chart'+i"></chart-gnss>
+					</div>
+				</TabPane>
+			</Tabs>
+		</div>
+		
+	</div>
+</template>
+
+<script>
+	import chartRain from '@/components/chartRain'
+	import chartWire from '@/components/chartWire'
+	import chartGnss from '@/components/chartGNSS'
+	export default {
+		components:{chartRain,chartWire,chartGnss},
+		data(){
+			return{
+				search:{
+					val1:'2',
+					val2:'3',
+					val3:[]
+				},
+				pointsHide:[
+					{label:'隐患点1',value:'1'},
+					{label:'隐患点2',value:'2'},
+					{label:'隐患点3',value:'3'},
+					{label:'隐患点4',value:'4'}
+				],
+				pointsMonitor:[
+					{label:'监测点1',value:'1'},
+					{label:'监测点2',value:'2'},
+					{label:'监测点3',value:'3'},
+				],
+				panels:[
+					{id:1,type:1,name:'x雨量计'},
+					{id:2,type:2,name:'x拉线位移计'},
+					{id:3,type:3,name:'xGNSS表面位移站'},
+					{id:4,type:1,name:'xxx雨量计'},
+				]
+			}
+		},
+		methods:{
+			timeSelect(a){
+				this.search.val3 = a
+				console.log(this.search.val2)
+			}
+		}
+	}
+</script>
+
+<style lang="less">
+	.select_list{
+		margin:0 10px;
+		display: inline-block
+	}
+	.btn_select{
+		margin-left:12px
+	}
+	.panel_box{
+		margin:16px;
+	}
+</style>

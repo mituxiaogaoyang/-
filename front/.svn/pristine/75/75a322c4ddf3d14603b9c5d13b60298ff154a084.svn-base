@@ -1,0 +1,30 @@
+/**
+ * @authors remy
+ * @creatTime 2019-03-12 14:38:23
+ * @description 监测仪器相关接口
+ * @version 0.0.1
+ */
+
+import { apiRequest } from './index';
+
+export function getData(){
+  return apiRequest({
+    code: 0,
+    data: {
+      dataList: [
+        {
+          code: '123456789001Y10101', name: '监测仪器名称', model: '监测仪器型号',
+          factoryName: '生产单位', defaultCoefficient: '厂家率定系数',
+          temperatureCoefficient: '温度修正系数', originValue: '初始值', remark: '备注'
+        },
+        {
+          code: '123456789001Y10102', name: '监测仪器名称', model: '监测仪器型号',
+          factoryName: '生产单位', defaultCoefficient: '厂家率定系数',
+          temperatureCoefficient: '温度修正系数', originValue: '初始值', remark: '备注'
+        }
+      ],
+      pageNum: 1,
+      totalNum: 1
+    }
+  });
+}

@@ -1,0 +1,23 @@
+/**
+ * @authors remy
+ * @creatTime 2019-03-12 16:41:08
+ * @description 操作日志相关接口
+ * @version 0.0.1
+ */
+
+import { apiRequest } from './index';
+
+export function getData(){
+  return apiRequest({
+    code: 0,
+    data: {
+      dataList: [
+        { id: 1, userId: 1, userName: '操作人1', content: '登录', time: '2019-03-12 15:25:30' },
+        { id: 2, userId: 2, userName: '操作人2', content: '登录', time: '2019-03-12 16:25:30' },
+        { id: 3, userId: 3, userName: '操作人3', content: '修改登录密码', time: '2019-03-12 17:25:30' }
+      ],
+      pageNum: 1,
+      totalNum: 1
+    }
+  });
+}

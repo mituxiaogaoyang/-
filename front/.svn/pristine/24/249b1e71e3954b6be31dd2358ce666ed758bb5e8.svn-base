@@ -1,0 +1,26 @@
+/**
+ * @authors remy
+ * @creatTime 2019-03-15 14:20:50
+ * @description 
+ * @version 0.0.1
+ */
+
+import { apiRequest } from './index';
+
+export function getData(){
+  return apiRequest({
+    code: 0,
+    data: {
+      dataList: [],
+      pageNum: 1,
+      totalNum: 1
+    }
+  });
+}
+
+export function getUnreadNum(){
+  return apiRequest({
+    code: 0,
+    data: 2
+  });
+}

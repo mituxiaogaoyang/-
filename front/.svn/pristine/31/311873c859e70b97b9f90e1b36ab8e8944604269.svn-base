@@ -1,0 +1,125 @@
+<template>
+  <div class="content-box">
+    <div class="toolbar">
+			<RadioGroup v-model="btnDeal" type="button">
+					<Radio label="已处理"></Radio>
+					<Radio label="未处理"></Radio>
+			</RadioGroup>
+			<div class="select_list">
+				<span class="label">选择隐患点：</span>
+				<Select v-model="searchData.val1" style="width:200px">
+					<Option v-for="item in pointsHide" :value="item.value" :key="item.value">{{ item.label }}</Option>
+				</Select>
+			</div>
+			<div class="select_list">
+				<span class="label">选择监测点：</span>
+				<Select v-model="searchData.val2" style="width:200px">
+					<Option v-for="item in pointsMonitor" :value="item.value" :key="item.value">{{ item.label }}</Option>
+				</Select>
+			</div>
+			<Input search  @search="searchRelative" style='width:200px'/>
+    </div>
+    <ori-table :columns= "columns" :dataSource="dataSource" :loading="loading" :adaptCount="adaptCount"
+      :currentPage="currentPage" :totalPage="totalPage" :getData="getData"></ori-table>
+  </div>
+</template>
+<script>
+import * as api from '@/api/earlyWarning';
+import OriTable from '@/components/OriTable';
+export default {
+  components: {
+    OriTable
+  },
+  data(){
+    return {
+      columns: [
+        {
+          title: '序号',
+          type: 'index',
+          width: 70
+        },
+				{
+					title:'隐患点',
+					key:'pointHide',
+					minWidth:120
+				},
+				{
+					title:'检测设备',
+					key:'device',
+					minWidth:120
+				},
+				{
+					title:'预警程度',
+					key:'degree',
+					minWidth:100
+				},
+				{
+					title:'预警内容',
+					key:'content',
+					minWidth:150
+				},
+				{
+					title:'预警时间',
+					key:'time',
+					minWidth:130
+				},
+				{
+					title:'操作',
+					key:'operate',
+					minWidth:100
+				},
+      ],
+      dataSource: [],
+      loading: true,
+      adaptCount: 0,
+      currentPage: 1,
+      totalPage: 1,
+      pageSize: 10,
+			btnDeal:'已处理',
+			searchData:{
+				val1:'2',
+				val2:'3',
+			},
+			pointsHide:[
+				{label:'隐患点1',value:'1'},
+				{label:'隐患点2',value:'2'},
+				{label:'隐患点3',value:'3'},
+				{label:'隐患点4',value:'4'}
+			],
+			pointsMonitor:[
+				{label:'监测点1',value:'1'},
+				{label:'监测点2',value:'2'},
+				{label:'监测点3',value:'3'},
+			],
+    };
+  },
+  created(){
+    this.getData();
+  },
+  mounted(){
+  },
+  destroyed(){
+  },
+  methods: {
+    getData(pageNum){
+      this.loading = true
+      api.getData({pageNum: pageNum || 1, pageSize: this.pageSize})
+      .then(result => {
+          this.dataSource = result.dataList;
+          this.currentPage = result.pageNum;
+          this.totalPage = result.totalNum;
+          this.loading = false;
+          this.adaptCount++;
+      });
+    },
+		searchRelative(){
+			
+		}
+  }
+}
+</script>
+<style scoped lang="less">
+	.select_list{
+		display: inline-block
+	}
+</style>

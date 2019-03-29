@@ -1,0 +1,209 @@
+<template>
+  <div class="chart rainfall-chart"></div>
+</template>
+<script>
+import echarts from '@/common/echarts.custom';
+import { getDomWidth, getDomHeight } from '@/lib/util/dom';
+export default {
+  name: 'rainfall-chart',
+  props: {
+    options: {
+      type: Object,
+      default: () => {}
+    }
+  },
+  data(){
+    return {
+      opts: {}
+    };
+  },
+  created(){
+    this.opts = Object.assign({}, this.options || {});
+  },
+  mounted(){
+    this.init();
+    const yData = [12, 2, 6, 15, 6, 21, 5],
+        xData = ['3.12', '3.13', '3.14', '3.15', '3.16', '3.17', '3.18'];
+    this.update(xData, yData);
+
+    window.addEventListener('resize', () => {
+      this.chart && this.chart.resize(getDomWidth(this.$el), getDomHeight(this.$el));
+    });
+  },
+  methods: {
+    init(){
+      this.chart = echarts.init(this.$el);
+      const _this = this,
+        xData = [],
+        data = [],
+        radius = 6, // 内外矩形的四个圆角
+        gap = 4, // 分割线的宽+间隔
+        colors = ['#00FB5A', '#E0E31A', '#E19A00', '#e14a00', '#FF0006'];
+
+      function getColorByVal(val){
+        switch (true) {
+          case val >= 30:
+            return colors[4];
+          case val >= 25:
+            return colors[3];
+          case val >= 20:
+            return colors[2];
+          case val >= 15:
+            return colors[1];
+          default:
+            return colors[0];
+        }
+      }
+
+      function getSplitLines(api, x1, x2, startY, endY){
+        const result = [];
+        let y = startY - gap;
+        while(y > endY){
+          result.push({
+            type: 'line',
+            shape: {
+              x1: x1,
+              y1: y,
+              x2: x2,
+              y2: y
+            },
+            style: api.style({stroke: '#1a3549', fill: null})
+          });
+          y -= gap;
+        }
+        return result;
+      }
+
+      function renderItem(params, api) {
+        const max = _this.max || 0;
+        const xValue = api.value(0), yValue = api.value(1),
+          point = api.coord([xValue, yValue]),
+          maxPoint = api.coord([xValue, max]),
+          minPoint = api.coord([xValue, 0]),
+          [ oneX, oneY ] = api.size([1, 1]); // x、y轴上的1刻度分别对应的像素大小
+        // 坐标原点在左上角
+        const itemWidth = oneX * 0.6,
+          outerX = maxPoint[0] - itemWidth / 2,
+          innerH = oneY * yValue;
+
+        const childs = [{
+          type: 'rect',
+          shape: {
+            x: outerX,
+            y: maxPoint[1],
+            width: itemWidth,
+            height: oneY * max,
+            r: [radius]
+          },
+          style: api.style({stroke: 'rgba(255,255,255,0.2)', fill: null})
+        }, {
+          type: 'text',
+          style: {
+            text: yValue + 'mm',
+            x: maxPoint[0],
+            y: maxPoint[1] - 18,
+            textAlign: 'center',
+            fill: 'rgba(255,255,255,0.5)'
+          }
+        }, {
+          type: 'rect',
+          shape: {
+            x: outerX + 1,
+            y: point[1],
+            width: itemWidth - 2,
+            height: innerH - 1,
+            r: [0, 0, radius, radius]
+          },
+          style: api.style({stroke: null, fill: getColorByVal(yValue)})
+        }];
+
+        const lineArr = getSplitLines(api, outerX + 1, outerX + itemWidth - 1, point[1] + innerH - 1, point[1]);
+
+        return {
+          type: 'group',
+          children: childs.concat(lineArr)
+        };
+      }
+
+      const option = {
+        grid: {
+          top: 20,
+          bottom: 28,
+          left: 30,
+          right: 24
+        },
+        tooltip: {
+          show: false,
+          trigger: 'axis',
+          axisPointer: {
+            type: 'shadow'
+          }
+        },
+        xAxis: {
+          axisLine: {
+            show: false
+          },
+          axisTick: {
+            show: false
+          },
+          axisLabel: {
+            textStyle: {
+              color: 'rgba(255,255,255,0.5)'
+            }
+          },
+          data: xData
+        },
+        yAxis: {
+          splitLine: {
+            show: false
+          },
+          axisLine: {
+            show: false
+          },
+          axisTick: {
+            show: false
+          },
+          axisLabel: {
+            show: false
+          },
+          max: null
+        },
+        series: [{
+          type: 'custom',
+          name: 'name',
+          renderItem: renderItem,
+          encode: {
+            x: 0,
+            y: 1
+          },
+          data: data
+        }]
+      };
+
+      this.chart.setOption(option);
+    },
+    update(xData, yData){
+      const data = yData.map((item, i) => [xData[i], item]),
+        max = yData.slice().sort((a, b) => a < b)[0] + 5;
+
+      this.max = max;
+
+      const option = {
+        xAxis: {
+          data: xData
+        },
+        yAxis: {
+          max: max
+        },
+        series: [{
+          data: data
+        }]
+      };
+
+      this.chart.setOption(option);
+    }
+  }
+}
+</script>
+<style scoped lang="less">
+</style>

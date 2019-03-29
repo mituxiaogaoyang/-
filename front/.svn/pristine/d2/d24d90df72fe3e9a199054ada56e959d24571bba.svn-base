@@ -1,0 +1,161 @@
+<template>
+  <div class="content-box">
+    <div class="toolbar">
+    </div>
+    <ori-table :columns= "columns" :dataSource="dataSource" :loading="loading" :adaptCount="adaptCount"
+      :currentPage="currentPage" :totalPage="totalPage" :getData="getData"></ori-table>
+  </div>
+</template>
+<script>
+import * as api from '@/api/monitorPoint';
+import OriTable from '@/components/OriTable';
+import { formatLevel } from '@/common/format';
+export default {
+  components: {
+    OriTable
+  },
+  data(){
+    return {
+      columns: [
+        {
+          title: '序号',
+          type: 'index',
+          width: 60,
+          fixed: 'left'
+        },
+        {
+          title: '监测点编号',
+          key: 'monitorCode',
+          width: 160,
+          fixed: 'left'
+        },
+        {
+          title: '隐患点编号',
+          key: 'hideDangerCode',
+          width: 120,
+          fixed: 'left'
+        },
+        {
+          title: '监测仪器编号',
+          key: 'deviceCode',
+          width: 170,
+          fixed: 'left'
+        },
+        {
+          title: '监测点名称',
+          key: 'monitorName',
+          width: 120,
+          fixed: 'left'
+        },
+        {
+          title: '监测级别',
+          key: 'monitorLevel',
+          width: 100,
+          fixed: 'left',
+          render: (h, param) => {
+            return h('span', formatLevel(param.row.monitorLevel));
+          }
+        },
+        {
+          title: '监测方法',
+          key: 'monitorWay',
+          width: 100
+        },
+        {
+          title: '监测部位',
+          key: 'monitorPart',
+          width: 100
+        },
+        {
+          title: '监测内容',
+          key: 'monitorContent',
+          width: 120
+        },
+        {
+          title: 'IP',
+          key: 'ip',
+          width: 130
+        },
+        {
+          title: '端口号',
+          key: 'port',
+          width: 80
+        },
+        {
+          title: '经度',
+          key: 'lng',
+          width: 120
+        },
+        {
+          title: '纬度',
+          key: 'lat',
+          width: 120
+        },
+        {
+          title: '建设日期',
+          key: 'buildDate',
+          width: 120
+        },
+        {
+          title: '安装日期',
+          key: 'installDate',
+          width: 120
+        },
+        {
+          title: '初测日期',
+          key: 'firstTestDate',
+          width: 120
+        },
+        {
+          title: '建设单位',
+          key: 'buildUnit',
+          width: 120
+        },
+        {
+          title: '承建单位',
+          key: 'contractor',
+          width: 120
+        },
+        {
+          title: '运行维护单位',
+          key: 'maintenanceUnit',
+          width: 120
+        },
+        {
+          title: '责任人',
+          key: 'personLiable',
+          width: 80
+        }
+      ],
+      dataSource: [],
+      loading: true,
+      adaptCount: 0,
+      currentPage: 1,
+      totalPage: 1,
+      pageSize: 10
+    };
+  },
+  created(){
+    this.getData();
+  },
+  mounted(){
+  },
+  destroyed(){
+  },
+  methods: {
+    getData(pageNum){
+      this.loading = true
+      api.getData({pageNum: pageNum || 1, pageSize: this.pageSize})
+      .then(result => {
+          this.dataSource = result.dataList;
+          this.currentPage = result.pageNum;
+          this.totalPage = result.totalNum;
+          this.loading = false;
+          this.adaptCount++;
+      });
+    }
+  }
+}
+</script>
+<style scoped lang="less">
+</style>

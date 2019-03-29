@@ -1,0 +1,113 @@
+<template>
+  <div class="content-box">
+    <div class="toolbar">
+      <div class="rightBar">
+        <Button type="primary" @click="add">新增</Button>
+      </div>
+    </div>
+    <ori-table :columns= "columns" :dataSource="dataSource" :loading="loading" :adaptCount="adaptCount"
+      :currentPage="currentPage" :totalPage="totalPage" :getData="getData"></ori-table>
+    <Edit :title="editTitle"></Edit>
+  </div>
+</template>
+<script>
+import * as api from '@/api/user';
+import OriTable from '@/components/OriTable';
+import Edit from './edit';
+export default {
+  components: {
+    OriTable,
+    Edit
+  },
+  data(){
+    return {
+      columns: [
+        {
+          title: '序号',
+          type: 'index',
+          width: 60
+        },
+        {
+          title: '用户名',
+          key: 'userName'
+        },
+        {
+          title: '操作',
+          key: 'id',
+          render: (h, param) => {
+            return [
+              h('Button', {
+                props: {
+                  size: 'small'
+                },
+                on: {
+                  click: () => {
+                    this.modify(param.row);
+                  }
+                }
+              }, '修改'),
+              h('Button', {
+                style: {
+                  marginLeft: '20px'
+                },
+                props: {
+                  size: 'small'
+                },
+                on: {
+                  click: () => {
+                    this.resetPwd(param.row.id);
+                  }
+                }
+              }, '重置密码')
+            ];
+          }
+        }
+      ],
+      dataSource: [],
+      loading: true,
+      adaptCount: 0,
+      currentPage: 1,
+      totalPage: 1,
+      pageSize: 10,
+      editTitle: ''
+    };
+  },
+  created(){
+    this.getData();
+  },
+  mounted(){
+  },
+  destroyed(){
+  },
+  methods: {
+    getData(pageNum){
+      this.loading = true
+      api.getData({pageNum: pageNum || 1, pageSize: this.pageSize})
+      .then(result => {
+					
+          this.dataSource = result.dataList;
+          this.currentPage = result.pageNum;
+          this.totalPage = result.totalNum;
+          this.loading = false;
+          this.adaptCount++;
+      });
+    },
+    openEdit(){
+      this.$store.commit('modal/openEdit');
+    },
+    add(){
+      this.editTitle = '新增';
+      this.openEdit();
+    },
+    modify(rowData){
+      this.editTitle = '修改';
+      this.openEdit();
+    },
+    resetPwd(userId){
+      console.log('重置密码', userId);
+    }
+  }
+}
+</script>
+<style scoped lang="less">
+</style>

@@ -1,0 +1,271 @@
+<template>
+  <div class="header">
+    <!-- <span class="appName">地质灾害监测预警系统</span>
+    <div class="right-con">
+      <span class="msgIcon" @click="goToMsgCenter">
+        <span class="unreadIcon" v-if="hasUnreadMsg"></span>
+      </span>
+      <div class="userTools">
+        <div class="userName">
+          <span>{{userName}}</span>
+          <Icon type="ios-arrow-down"></Icon>
+        </div>
+        <ul>
+          <li @click="modifyPwd">修改密码</li>
+          <li @click="confirmExit">退出</li>
+        </ul>
+      </div>
+    </div> -->
+			<div class="logo"><img src="@/assets/header/logo.png" alt="logo"></div>
+			<div class="line"></div>
+			<div class="right_lists">
+				<!-- <div class="weather">天气</div> -->
+				<router-link :to="{path: 'msgCenter'}" class="bell"><div class="number">2</div></router-link>
+				<div class="user">
+					<div class="avatar"><img src="../assets/login/img.png" alt=""></div>
+					<div class="info">
+						<div class="name">袁刚</div>
+						<div class="online">在线</div>
+					</div>
+				</div>
+				<a  class='back_anchor' @click="toBig"></a>
+				<!-- <a href="" class="test"><img src="../assets/header/bigscreen.png" alt=""></a> -->
+			</div>
+    <Modal v-model="visible"
+      class-name="edit-modal"
+      width="350"
+      :closable="false"
+      :mask-closable="false">
+      <div slot="header">
+        <span>修改密码</span>
+        <Icon type="ios-close" @click="close"></Icon>
+      </div>
+      <Form ref="form" :model="form" :rules="rules" :label-width="80">
+        <FormItem label="旧密码" prop="password">
+          <Input type="password" v-model="form.password"></Input>
+        </FormItem>
+        <FormItem label="新密码" prop="newPassword">
+          <Input type="password" v-model="form.newPassword"></Input>
+        </FormItem>
+        <FormItem label="确认密码" prop="againPwd">
+          <Input type="password" v-model="form.againPwd"></Input>
+        </FormItem>
+      </Form>
+      <div slot="footer">
+        <Button type="primary" @click="close">取消</Button>
+        <Button type="primary" @click="sure" :loading="submiting">确定</Button>
+      </div>
+    </Modal>
+  </div>
+</template>
+
+<script>
+import { mapState } from 'vuex';
+import * as api from '@/api/user';
+export default {
+  name: 'ori-header',
+  data(){
+    return {
+      userName: sessionStorage.username || '用户',
+      visible: false,
+      submiting: false,
+      form: {
+        password: '',
+        newPassword: '',
+        againPwd: ''
+      },
+      rules: {
+        password: [
+          { required: true, message: '旧密码不能为空', trigger: 'blur' }
+        ],
+        newPassword: [
+          { required: true, validator: (rule, value, callback) => {
+            if(value === ''){
+              callback(new Error('新密码不能为空'));
+            }else if(!(/^[a-zA-Z0-9]{6,16}$/.test(value))){
+              callback(new Error('密码由6到16位字母或字母组成'));
+            }else{
+              callback();
+            }
+          }, trigger: 'blur' }
+        ],
+        againPwd: [
+          { required: true, validator: (rule, value, callback) => {
+            if(value === ''){
+              callback(new Error('请再次输入新密码'));
+            }else if(value !== this.form.newPassword){
+              callback(new Error('两次输入的新密码不一致'));
+            }else{
+              callback();
+            }
+          }, trigger: 'blur' }
+        ]
+      }
+    }
+  },
+  computed: {
+    ...mapState({
+      inputVisible: state => state.inputVisible,
+      hasUnreadMsg: state => state.hasUnreadMsg
+    })
+  },
+  created(){},
+  mounted(){},
+  destroyed(){},
+  methods: {
+    goToMsgCenter(){
+      this.$router.push({path: 'msgCenter'});
+    },
+    modifyPwd(){
+      this.visible = true;
+    },
+    confirmExit(){
+      this.$Modal.confirm({
+        title: '确认',
+        content: '是否确定退出平台？',
+        onOk: this.exit
+      });
+    },
+		toBig(){
+			location.href = location.protocol + '//' + location.host + '/bigScreen';
+		},
+    exit(){
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('refreshToken');
+      sessionStorage.removeItem('userId');
+      location.href = location.protocol + '//' + location.host + '/login.html';
+    },
+    close(){
+      this.visible = false;
+      this.$refs.form.resetFields();
+      this.submiting = false;
+    },
+    sure(){
+      this.$refs.form.validate(result => {
+        if(result && !this.submiting){
+          this.submiting = true;
+          api.changePwd({id: sessionStorage.userId, ...this.form})
+          .then(res => {
+            this.$Message.success({
+              content: '密码修改成功，请重新登录',
+              onClose: () => {
+                this.exit();
+              }
+            });
+            this.submiting = false;
+          })
+          .catch(res => this.submiting = false);
+        }
+      });
+    }
+  }
+}
+</script>
+
+<style lang="less">
+.header{
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 99;
+  width: 100%;
+  min-width: 1095px;
+	padding:16px 18px 0;
+	.logo{
+		width:230px;
+		float:left;
+		img{
+			width:100%
+		}
+	}
+	.line{
+		position: absolute;
+		left:270px;
+		right:18px;
+		height:1px;
+		background: rgba(255,255,255, .2);
+		top:62px;
+	}
+	.right_lists{
+		float:right;
+		&>div{
+			display: inline-block;
+			vertical-align: middle;
+			margin-right:21px;
+		}
+		.bell{
+			width:30px;
+			height:30px;
+			display: inline-block;
+			vertical-align: middle;
+			margin-right:21px;
+			background: url('../assets/header/bell.png') no-repeat;
+			background-size: contain;
+			cursor:pointer;
+			position: relative;
+			opacity: 0.9;
+			.number{
+				position: absolute;
+				top:-3px;
+				right:-6px;
+				width:18px;
+				min-height:18px;
+				border-radius: 9px;
+				line-height: 18px;
+				font-size: 12px;
+				color:#fff;
+				text-align: center;
+				background-color: #C20C0C;
+			}
+			&:hover{
+				opacity: 1
+			}
+		}
+		.user{
+			.avatar{
+				width:36px;
+				float:left;
+				margin-right:5px;
+				img{
+					width:100%;
+				}
+			}
+			.info{
+				float:left;
+				.online{
+					margin-top:3px;
+					padding-left:14px;
+					position: relative;
+					line-height: 1;
+					font-size: 12px;
+					color:#02FE20;
+					&:before{
+						content:'';
+						display: block;
+						width:8px;
+						height:8px;
+						border-radius: 50%;
+						background-color: #02FE20;
+						position: absolute;
+						top:2px;
+						left:0;
+					}
+				}
+			}
+		}
+		.back_anchor{
+			display: inline-block;
+			vertical-align: middle;
+			width:105px;
+			height:31px;
+			background: url('../assets/header/bigscreen.png') no-repeat;
+			background-size: contain;
+		}
+		.test{
+			display: inline-block;
+			height:31px;
+			img{height:100%}
+		}
+	}
+}
+</style>

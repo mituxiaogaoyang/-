@@ -1,0 +1,34 @@
+/**
+ * @authors remy
+ * @creatTime 2019-03-12 11:30:15
+ * @description 监测点相关接口
+ * @version 0.0.1
+ */
+
+import { apiRequest } from './index';
+
+export function getData(){
+  return apiRequest({
+    code: 0,
+    data: {
+      dataList: [
+        {
+          monitorCode: '123456789001Y101', hideDangerCode: '123456789001', deviceCode: '123456789001Y10101',
+          monitorName: '监测点1', monitorLevel: 1, monitorWay: 1, monitorPart: 1, monitorContent: 'sb1',
+          ip: '222.222.222.221', port: 8080, lng: 104.5, lat: 30.5, buildDate: '2019-03-12', installDate: '2019-03-15',
+          firstTestDate: '2019-03-20', buildUnit: '建设单位', contractor: '承建单位',
+          maintenanceUnit: '运行维护单位', personLiable: '责任人'
+        },
+        {
+          monitorCode: '123456789001Y102', hideDangerCode: '123456789001', deviceCode: '123456789001Y10201',
+          monitorName: '监测点2', monitorLevel: 1, monitorWay: 1, monitorPart: 1, monitorContent: 'sb2',
+          ip: '222.222.222.222', port: 8080, lng: 104.5, lat: 30.5, buildDate: '2019-03-12', installDate: '2019-03-15',
+          firstTestDate: '2019-03-20', buildUnit: '建设单位', contractor: '承建单位',
+          maintenanceUnit: '运行维护单位', personLiable: '责任人'
+        }
+      ],
+      pageNum: 1,
+      totalNum: 1
+    }
+  });
+}

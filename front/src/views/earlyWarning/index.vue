@@ -1,0 +1,248 @@
+<template>
+  <div class="content-box">
+    <div class="toolbar">
+			<RadioGroup v-model="btnDeal" type="button" @on-change='queryAnother'>
+				<Radio label="未处理"></Radio>
+				<Radio label="已处理"></Radio>	
+			</RadioGroup>
+			<div class="select_list">
+				<span class="label">选择隐患点：</span>
+				<Select v-model="searchData.val1" style="width:150px">
+					<Option v-for="item in pointsHide" :value="item.value" :key="item.value">{{ item.label }}</Option>
+				</Select>
+			</div>
+			<div class="select_list">
+				<span class="label">选择监测点：</span>
+				<Select v-model="searchData.val2" style="width:150px">
+					<Option v-for="item in pointsMonitor" :value="item.value" :key="item.value">{{ item.label }}</Option>
+				</Select>
+			</div>
+			<div class="rightBar">
+				<Input search  @search="searchRelative" style='width:200px'/>
+			</div>
+			
+    </div>
+    <ori-table :columns= "columns" :dataSource="dataSource" :loading="loading" :adaptCount="adaptCount"
+      :currentPage="currentPage" :totalPage="totalPage" :getData="getData" v-if="btnDeal==='未处理'"></ori-table>
+	  <ori-table :columns= "columns2" :dataSource="dataSource" :loading="loading" :adaptCount="adaptCount"
+		:currentPage="currentPage" :totalPage="totalPage" :getData="getData" v-else></ori-table>
+		<Modal
+			v-model="dealShow"
+			width='900'
+			@on-ok="submitRemark"
+			title="预警处理">
+			<div class="remark_box">
+				<label for="remark">备注：</label>
+				<Input v-model="remarkDeal" type="textarea" :rows="4" placeholder="记点东西吧..." id='remark'/>
+			</div>
+			
+		</Modal>
+  </div>
+</template>
+<script>
+import * as api from '@/api/earlyWarning';
+import OriTable from '@/components/OriTable';
+export default {
+  components: {
+    OriTable
+  },
+  data(){
+    return {
+      columns: [
+		{
+			title:'隐患点',
+			key:'jcca20A055',
+			minWidth:120
+		},
+		{
+			title:'预警名称',
+			key:'jcca20A906',
+			minWidth:150,
+		},
+		{
+			title:'预警类型',
+			key:'jcca20A901',
+			minWidth:120,
+			render:(h,param)=>{
+				return h('div',param.row.jcca20A901==='1'?'手动预警':'自动预警')
+			}
+		},
+		{
+			title:'预警等级',
+			key:'jcca20A030',
+			minWidth:100,
+			render: (h,param)=>{
+				return h('div',(()=>{
+					let val = ''
+					switch(param.row.jcca20A030){
+						case 1:val = '注意级';break
+						case 2:val = '警示级';break
+						case 3:val = '警戒级';break
+						case 4:val = '警报级';break
+					}
+					return val
+				})())
+			}
+		},
+		{
+			title:'预警内容',
+			key:'jcca20A903',
+			minWidth:180
+		},
+		{
+			title:'预警时间',
+			key:'jcca20A040',
+			minWidth:130
+		},
+		{
+			title:'操作',
+			key:'operate',
+			minWidth:100,
+			render: (h,param)=>{
+				return h('Button',{
+						props:{
+							size: 'small',
+							type:'text'
+						},
+						on:{
+							click:()=>{
+								this.dealId = param.row.id
+								this.dealShow = true
+							}
+						}
+					},'处理')
+			}
+		},
+      ],
+	  columns2: [
+	  		{
+	  			title:'隐患点',
+	  			key:'jcca20A055',
+	  			minWidth:120
+	  		},
+			{
+				title:'预警名称',
+				key:'jcca20A906',
+				minWidth:150,
+			},
+	  		{
+	  			title:'预警类型',
+	  			key:'jcca20A901',
+	  			minWidth:120,
+	  			render:(h,param)=>{
+	  				return h('div',param.row.jcca20A901==='1'?'手动预警':'自动预警')
+	  			}
+	  		},
+	  		{
+	  			title:'预警等级',
+	  			key:'jcca20A030',
+	  			minWidth:100,
+	  			render: (h,param)=>{
+	  				return h('div',(()=>{
+	  					let val = ''
+	  					switch(param.row.jcca20A030){
+	  						case 1:val = '注意级';break
+	  						case 2:val = '警示级';break
+	  						case 3:val = '警戒级';break
+	  						case 4:val = '警报级';break
+	  					}
+	  					return val
+	  				})())
+	  			}
+	  		},
+	  		{
+	  			title:'预警内容',
+	  			key:'jcca20A903',
+	  			minWidth:180
+	  		},
+	  		{
+	  			title:'预警时间',
+	  			key:'jcca20A040',
+	  			minWidth:130
+	  		},
+	  		{
+	  			title:'预警备注',
+	  			key:'jcca20A904',
+	  			minWidth:100
+	  		},
+	  ],
+      dataSource: [],
+      loading: true,
+      adaptCount: 0,
+      currentPage: 1,
+      totalPage: 1,
+      pageSize: 10,
+		btnDeal:'未处理',
+		searchData:{
+			val1:'2',
+			val2:'3',
+		},
+		pointsHide:[
+			{label:'隐患点1',value:'1'},
+			{label:'隐患点2',value:'2'},
+			{label:'隐患点3',value:'3'},
+			{label:'隐患点4',value:'4'}
+		],
+		pointsMonitor:[
+			{label:'监测点1',value:'1'},
+			{label:'监测点2',value:'2'},
+			{label:'监测点3',value:'3'},
+		],
+		remarkDeal:'',
+		dealShow:false
+    };
+  },
+  created(){
+    this.getData();
+  },
+  mounted(){
+  },
+  destroyed(){
+  },
+  methods: {
+    getData(pageNum){
+      this.loading = true
+      api.getData({pageNum: pageNum || 1, pageSize: this.pageSize,jcca20A902:this.btnDeal==='未处理'?false:true})
+      .then(result => {
+          this.dataSource = result.dataList;
+          this.currentPage = result.pageNum;
+          this.totalPage = result.totalNum;
+          this.loading = false;
+          this.adaptCount++;
+      });
+    },
+	queryAnother(){
+		this.getData()
+	},
+	searchRelative(){
+		
+	},
+	submitRemark(){
+		api.dealWarn(this.dealId,this.remarkDeal)
+		.then(result=>{
+			this.dealShow = false
+			this.remarkDeal = ''
+			this.$Message.info('提交成功')
+			this.getData()
+		})
+	}
+  }
+}
+</script>
+<style scoped lang="less">
+	.select_list{
+		display: inline-block;
+		margin-left:24px;
+	}
+	.remark_box{
+		position: relative;
+		padding-left:80px;
+		margin:30px;
+		label{
+			position: absolute;
+			top:15px;
+			left:0;
+			font-size: 14px;
+		}
+	}
+</style>

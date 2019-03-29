@@ -1,0 +1,131 @@
+<template>
+  <div class="right-top-con">
+    <Icon type="md-rewind" :class="rightConVisible ? 'right' : 'left'" @click="rightConVisible=!rightConVisible" />
+    <div :class="rightConVisible ? 'opened' : 'closed'">
+      <div class="warning-monitor">
+        <div class="title">预警监控</div>
+        <div class="item level1-color">
+          <div class="label">注意级</div>
+          <div class="num">{{warningMonitor.num1 || 0}}</div>
+        </div>
+        <div class="item level2-color">
+          <div class="label">警示级</div>
+          <div class="num">{{warningMonitor.num2 || 0}}</div>
+        </div>
+        <div class="item level3-color">
+          <div class="label">警戒级</div>
+          <div class="num">{{warningMonitor.num3 || 0}}</div>
+        </div>
+        <div class="item level4-color">
+          <div class="label">报警级</div>
+          <div class="num">{{warningMonitor.num4 || 0}}</div>
+        </div>
+      </div>
+      <div class="msg-notice">
+        <div class="title">
+          <span>消息通知</span>
+          <Icon type="ios-arrow-forward" />
+          <Icon type="ios-arrow-forward" />
+        </div>
+        <list-roll :dataSource="msgNotice"></list-roll>
+      </div>
+    </div>
+  </div>
+</template>
+<script>
+import ListRoll from '@/components/listRoll';
+export default {
+  name: 'right-top-con',
+  components: {
+    ListRoll
+  },
+  props: {
+    warningMonitor: {
+      type: Object,
+      default: () => {}
+    },
+    msgNotice: {
+      type: Array,
+      default: () => []
+    }
+  },
+  data(){
+    return {
+      rightConVisible: true
+    };
+  },
+  watch: {
+  }
+}
+</script>
+<style lang="less">
+.right-top-con{
+  position: absolute;
+  right: 0.7rem;
+  top: 6.6rem;
+  z-index: 999999;
+  >div{
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 18.3rem;
+    height: 21.4rem;
+    &.opened{
+      right: 0;
+      transition: right 1s ease 0s;
+    }
+    &.closed{
+      right: -20rem;
+      transition: right 1s ease 0s;
+    }
+  }
+  .ivu-icon-md-rewind{
+    right: -0.7rem;
+  }
+  .title{
+    font-size: 0.8rem;
+    color: #0ff;
+    margin-bottom: 0.25rem;
+  }
+  .warning-monitor{
+    height: 6.3rem;
+    padding: 0.7rem 0.8rem;
+    border-radius: 0.3rem;
+    background-color: rgba(2, 17, 17, 0.5);
+    .item{
+      float: left;
+      width: 25%;
+      padding-left: 0.3rem;
+      .label{
+        line-height: 1.5rem;
+        font-size: 0.7rem;
+      }
+      .num{
+        line-height: 2.2rem;
+        font-size: 1.5rem;
+        font-family: 'MyFont';
+      }
+    }
+  }
+  .msg-notice{
+    height: 14.7rem;
+    padding: 0.7rem 0.8rem;
+    margin-top: 0.4rem;
+    border-radius: 0.3rem;
+    background-color: rgba(2, 17, 17, 0.5);
+    position: relative;
+    .title{
+      position: absolute;
+      top: 0.7rem;
+      left: 0.8rem;
+      >.ivu-icon:last-child{
+        margin-left: -9px;
+      }
+    }
+    .list-roll{
+      height: 11.85rem;
+      margin-top: 1.45rem;
+    }
+  }
+}
+</style>

@@ -1,0 +1,26 @@
+<template>
+  <div>
+    <div class="item" v-for="(item, index) in dataSource" :key="index" :class="'level'+item.level+'-color'">{{item.content}}</div>
+  </div>
+</template>
+<script>
+export default {
+  name: 'roll-msg',
+  props: ['dataSource'],
+  data(){
+    return {};
+  },
+  created(){},
+  mounted(){},
+  methods: {}
+}
+</script>
+<style scoped lang="less">
+.item{
+  font-size: 0.7rem;
+  line-height: 1.8rem;
+  margin-left: 1rem;
+  margin-right: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+</style>

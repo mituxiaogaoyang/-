@@ -1,0 +1,79 @@
+<template>
+  <EditModal :title="title || '新增'" @cancel="close" @sure="sure">
+    <div class="user-edit">
+      <Form ref="form" :model="form" :rules="rules" :label-width="80">
+        <FormItem label="用户名" prop="userName">
+          <Input type="text" v-model="form.userName"></Input>
+        </FormItem>
+        <FormItem label="密码" prop="password">
+          <Input type="password" v-model="form.password"></Input>
+        </FormItem>
+        <FormItem label="确认密码" prop="againPwd">
+          <Input type="password" v-model="form.againPwd"></Input>
+        </FormItem>
+      </Form>
+    </div>
+  </EditModal>
+</template>
+<script>
+// import { mapMutations } from 'vuex';
+import EditModal from '@/components/EditModal';
+import * as api from '@/api/user';
+export default {
+  components: {
+    EditModal
+  },
+  props: ['title'],
+  data(){
+    return {
+      submiting: false,
+      form: {
+        userName: '',
+        password: '',
+        againPwd: ''
+      },
+      rules: {
+        userName: [
+          { required: true, message: '请输入用户名', trigger: 'blur' }
+        ],
+        password: [
+          { required: true, message: '请输入登录密码', trigger: 'blur' }
+        ],
+        againPwd: [
+          { required: true, message: '请确认登录密码', trigger: 'blur' },
+          { validator: (rule, value, callback) => {
+            if(value !== this.form.password){
+              callback(new Error('两次输入的密码不一致'));
+            }else{
+              callback();
+            }
+          }, trigger: 'blur' }
+        ]
+      }
+    };
+  },
+  computed: {
+  },
+  methods: {
+    // ...mapMutations('modal', ['closeEdit']),
+    close(){
+      this.$store.commit('modal/closeEdit');
+      this.$refs.form.resetFields();
+      this.submiting = false;
+    },
+    sure(){
+      this.$refs.form.validate(result => {
+        if(result && !this.submiting){
+          this.submiting = true;
+          api.save({...this.form}).then(() => {
+            this.close();
+          });
+        }
+      });
+    }
+  }
+}
+</script>
+<style scoped lang="less">
+.user-edit {}
+</style>

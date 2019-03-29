@@ -1,0 +1,34 @@
+/**
+ * @authors remy
+ * @creatTime 2019-03-12 10:14:34
+ * @description 隐患点相关接口
+ * @version 0.0.1
+ */
+
+import { apiRequest } from './index';
+
+export function getData(){
+  return apiRequest({
+    code: 0,
+    data: {
+      dataList: [
+        { name: 'YHDHB1234567', type: '滑坡', position: 'XX省XX市XX县XX乡XXXX地点', object: '分散农户，聚集户' },
+        { name: 'YHDHB6576768', type: '滑坡', position: 'XX省XX市XX县XX乡XXXX地点', object: '分散农户，聚集户' },
+				{ name: 'YHDHB1234567', type: '滑坡', position: 'XX省XX市XX县XX乡XXXX地点', object: '分散农户，聚集户' },
+				{ name: 'YHDHB1234543', type: '滑坡', position: 'XX省XX市XX县XX乡XXXX地点', object: '分散农户，聚集户' },
+				{ name: 'YHDHB1234587', type: '滑坡', position: 'XX省XX市XX县XX乡XXXX地点', object: '分散农户，聚集户' },
+				{ name: 'YHDHB1234517', type: '滑坡', position: 'XX省XX市XX县XX乡XXXX地点', object: '分散农户，聚集户' },
+				{ name: 'YHDHB1234566', type: '滑坡', position: 'XX省XX市XX县XX乡XXXX地点', object: '分散农户，聚集户' },
+				{ name: 'YHDHB1234535', type: '滑坡', position: 'XX省XX市XX县XX乡XXXX地点', object: '分散农户，聚集户' },
+      ],
+      totalNum: 18
+    }
+  });
+}
+export function deleteData(){
+	return apiRequest({
+	  code: 0,
+	  data: {
+	  }
+	});
+}

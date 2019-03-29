@@ -1,0 +1,47 @@
+<template>
+	<Menu active-name="喜德县" :open-names="['凉山州']" width="200"   @on-select="selectRegion">
+		<Submenu :name="region.name" v-for="region in regions">
+			<template slot="title">
+					{{region.name}}
+			</template>
+			<MenuItem  v-for="(data,i) in region.childs" :name="data.name" :key='i'>{{data.name}}</MenuItem>
+		</Submenu>
+	</Menu>
+</template>
+
+<script>
+	export default{
+		data(){
+			return{
+				regions:[
+					{
+						name:'凉山州',
+						childs:[
+							{name:'冕宁县'},
+							{name:'喜德县'},
+							{name:'越西县'},
+							{name:'甘洛县'},
+						]
+					},
+					{
+						name:'成都市',
+						childs:[
+							{name:'郫县'},
+						]
+					},
+					{
+						name:'绵阳市',
+					},
+				],
+			}
+		},
+		methods:{
+			selectRegion(a){
+				console.log(a)
+			}
+		}
+	}
+</script>
+
+<style>
+</style>

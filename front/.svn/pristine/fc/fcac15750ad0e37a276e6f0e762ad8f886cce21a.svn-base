@@ -1,0 +1,58 @@
+<template>
+  <div class="home-con">
+    <div id="map-container"></div>
+  </div>
+</template>
+<script>
+import './index.less';
+import MapTool from '@/lib/ol/mapTool';
+export default {
+  data(){
+    return {};
+  },
+  created(){
+    this.mapTool = new MapTool();
+  },
+  mounted(){
+    this.mapTool.init(document.getElementById('map-container'), 'googleSatellite');
+  },
+  destroyed(){},
+  methods: {}
+}
+</script>
+<style lang="less">
+#map-container{
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  .tooltip{
+    background-color: #fff;
+    padding: 15px 40px;
+    border-radius: 46px;
+    line-height: 16px;
+    position: relative;
+    i{
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      &:after{
+        content: ' ';
+        position: absolute;
+        left: -10px;
+        bottom: -20px;
+        border: 10px solid transparent;
+        border-top-color: #fff;
+      }
+    }
+  }
+  .mapSign{
+    position: absolute;
+    right: 13px;
+    bottom: 1px;
+    color: #969fb4;
+    z-index: 1;
+  }
+}
+</style>

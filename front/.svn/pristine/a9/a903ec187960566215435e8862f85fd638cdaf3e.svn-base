@@ -1,0 +1,46 @@
+/**
+ * @authors remy
+ * @creatTime 2019-03-12 16:40:57
+ * @description 系统用户相关接口
+ * @version 0.0.1
+ */
+
+import { apiRequest } from './index';
+
+export function getData(){
+  return apiRequest({
+    code: 0,
+    data: {
+      dataList: [
+        { id: 1, userName: '张三' },
+        { id: 2, userName: '李四' },
+        { id: 3, userName: '王二' },
+        { id: 4, userName: '张三' },
+        { id: 5, userName: '李四' },
+        { id: 6, userName: '王二' },
+        { id: 7, userName: '张三' },
+        { id: 8, userName: '李四' },
+        { id: 9, userName: '王二' },
+        { id: 10, userName: '张三' }
+      ],
+      pageNum: 1,
+      totalNum: 30
+    }
+  });
+}
+
+export function save(){
+  return apiRequest({
+    code: 0,
+    data: { id: 3, userName: '王二' },
+    message: '用户新增成功'
+  });
+}
+
+export function changePwd(){
+  return apiRequest({
+    code: 0,
+    data: { id: 3, userName: '王二' },
+    message: '密码修改成功'
+  });
+}

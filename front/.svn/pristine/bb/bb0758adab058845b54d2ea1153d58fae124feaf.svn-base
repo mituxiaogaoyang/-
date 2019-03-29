@@ -1,0 +1,199 @@
+<template>
+  <div class="content_hide_points">
+  	<div class="bar_tree">
+  		<menu-tree></menu-tree>
+  	</div>
+  	<div class="content-box">
+			<div class="toolbar">
+					<Button type="primary" @click="add" class="btn_add" icon="md-add">新增设备</Button>
+					<Button type="primary" @click="leadIn">导入</Button>
+					<Button type="primary" @click="leadOut">导出</Button>
+					<div class="select_list">
+						<span class="label">选择隐患点：</span>
+						<Select v-model="pointSelect" style="width:200px">
+							<Option v-for="item in pointsHide" :value="item.value" :key="item.value">{{ item.label }}</Option>
+						</Select>
+					</div>
+					<div class="select_list">
+						<span class="label">选择监测点：</span>
+						<Select v-model="pointSelect2" style="width:200px">
+							<Option v-for="item in pointsMonitor" :value="item.value" :key="item.value">{{ item.label }}</Option>
+						</Select>
+					</div>
+					<div class="rightBar">
+						<Input search  @search="search"/>
+					</div>
+			  </div>
+			  <ori-table :columns= "columns" :dataSource="dataSource" :loading="loading" :adaptCount="adaptCount"
+			    :currentPage="currentPage" :totalPage="totalPage" :getData="getData"></ori-table>
+  	</div>
+  </div>
+</template>
+<script>
+import * as api from '@/api/device';
+import OriTable from '@/components/OriTable';
+import menuTree from '@/components/MenuTree';
+export default {
+  components: {
+    OriTable,
+		menuTree
+  },
+  data(){
+    return {
+      columns: [
+        {
+          title: '序号',
+          type: 'index',
+          width: 60
+        },
+        {
+          title: '设备名称',
+          key: 'name',
+          minWidth: 120
+        },
+        {
+          title: '设备编号',
+          key: 'code',
+          minWidth: 120
+        },
+        {
+          title: '设备类型',
+          key: 'model',
+          minWidth: 100
+        },
+        {
+          title: '所属隐患点',
+          key: 'pointHide',
+          minWidth: 150
+        },
+        {
+          title: '所属监测点',
+          key: 'pointMonitor',
+          minWidth: 150
+        },
+        {
+          title: '运行状态',
+          key: 'status',
+          minWidth: 100
+        },
+				{
+          title: '操作',
+          key: 'operate',
+          minWidth: 220,
+          render: (h, param) => {
+            return h('div',[
+        			h('Button', {
+        			  props: {
+        			    size: 'small',
+        					type:'text'
+        			  },
+        			  on: {
+        			    click: () => {
+        			      this.modify(param.row);
+        			    }
+        			  }
+        			}, '详情'),
+        			h('Button', {
+        			  props: {
+        			    size: 'small',
+        					type:'text'
+        			  },
+        			  on: {
+        			    click: () => {
+        			      this.resetPwd(param.row.id);
+        			    }
+        			  }
+        			}, '定位'),
+        			h('Button', {
+        			  props: {
+        			    size: 'small',
+        					type:'text'
+        			  },
+        			  on: {
+        			    click: () => {
+        						console.log(param.row)
+        						this.methodDeal = '编辑',
+        						this.form = ''
+        			      this.$store.commit('modal/openEdit');
+        			    }
+        			  }
+        			}, '编辑'),
+        			h('Button', {
+        			  props: {
+        			    size: 'small',
+        					type:'text'
+        			  },
+        			  on: {
+        			    click: () => {
+        						this.$Modal.confirm({
+        								title: '',
+        								content: '<p>确认删除该隐患点？</p>',
+        								center:true,
+        								onOk: () => {
+        										this.deletePoint(param.row.id);
+        								}
+        						});
+        			      
+        			    }
+        			  }
+        			}, '删除'),
+        		]);
+          }
+        }
+      
+      ],
+      dataSource: [],
+      loading: true,
+      adaptCount: 0,
+      currentPage: 1,
+      totalPage: 1,
+      pageSize: 10,
+			pointsHide:[
+				{label:'隐患点1',value:'1'},
+				{label:'隐患点2',value:'2'},
+				{label:'隐患点3',value:'3'},
+				{label:'隐患点4',value:'4'}
+			],
+			pointsMonitor:[
+				{label:'监测点1',value:'1'},
+				{label:'监测点2',value:'2'},
+				{label:'监测点3',value:'3'},
+			],
+			pointSelect:'',
+			pointSelect2:'',
+    };
+  },
+  created(){
+    this.getData();
+  },
+  mounted(){
+  },
+  destroyed(){
+  },
+  methods: {
+    getData(pageNum){
+      this.loading = true
+      api.getData({pageNum: pageNum || 1, pageSize: this.pageSize})
+      .then(result => {
+          this.dataSource = result.dataList;
+          this.currentPage = result.pageNum;
+          this.totalPage = result.totalNum;
+          this.loading = false;
+          this.adaptCount++;
+      });
+    },
+		add(){
+			
+		},
+		search(){},
+		leadIn(){},
+		leadOut(){}
+  }
+}
+</script>
+<style scoped lang="less">
+	.content{min-width: 1250px;}
+	.toolbar{
+		.select_list{display: inline-block;margin-right:18px;}
+	}
+</style>

@@ -1,0 +1,61 @@
+/**
+ * @authors remy
+ * @creatTime 2019-03-11 19:40:22
+ * @description 左侧菜单相关接口
+ * @version 0.0.1
+ */
+
+import { apiRequest } from './index';
+
+export function getData() {
+  return apiRequest({
+    code: 0,
+    data: [
+      { menuName: '首页', iconClass: 'homeIcon', menuPath: '/' },
+      {
+        menuName: '基础信息',
+        iconClass: 'baseIcon',
+        children: [
+          { menuName: '隐患点管理', menuPath: '/hideDangerPoint' },
+          { menuName: '监测点管理', menuPath: '/monitorPoint' },
+          { menuName: '设备管理', menuPath: '/device' },
+          { menuName: '地图标注', menuPath: '/' }
+        ]
+      },
+      {
+        menuName: '数据分析与报表',
+        iconClass: 'analysisIcon',
+        children: [
+          { menuName: '数据分析', menuPath: '/' },
+          { menuName: '监测报表', menuPath: '/' }
+        ]
+      },
+      {
+        menuName: '预警',
+        iconClass: 'warningIcon',
+        children: [
+          { menuName: '预警查询', menuPath: '/earlyWarning' },
+          { menuName: '预警设置', menuPath: '/' }
+        ]
+      },
+      {
+        menuName: '应急指挥',
+        iconClass: 'userIcon',
+        children: [
+          { menuName: '抢险救灾人员', menuPath: '/' },
+          { menuName: '物资仓库', menuPath: '/' },
+          { menuName: '人员疏散路线示意图', menuPath: '/' }
+        ]
+      },
+      {
+        menuName: '系统管理',
+        iconClass: 'userIcon',
+        children: [
+          { menuName: '角色管理', menuPath: '/role' },
+          { menuName: '用户管理', menuPath: '/user' },
+          { menuName: '操作日志', menuPath: '/log' }
+        ]
+      }
+    ]
+  });
+}

@@ -1,0 +1,70 @@
+import Vue from 'vue'
+import Router from 'vue-router'
+
+import store from './store'
+import { traversalTree } from '@/lib/util/traversal'
+
+Vue.use(Router)
+
+const router = new Router({
+  routes: [
+    {
+      path: '/hideDangerPoint',
+      name: 'hideDangerPoint',
+      component: () => import('./views/hideDangerPoint')
+    },
+    {
+      path: '/monitorPoint',
+      name: 'monitorPoint',
+      component: () => import('./views/monitorPoint')
+    },
+    {
+      path: '/device',
+      name: 'device',
+      component: () => import('./views/device')
+    },
+    {
+      path: '/earlyWarning',
+      name: 'earlyWarning',
+      component: () => import('./views/earlyWarning')
+    },
+    {
+      path: '/role',
+      name: 'role',
+      component: () => import('./views/role')
+    },
+    {
+      path: '/user',
+      name: 'user',
+      component: () => import('./views/user')
+    },
+    {
+      path: '/log',
+      name: 'log',
+      component: () => import('./views/log')
+    },
+    {
+      path: '/msgCenter',
+      name: 'msgCenter',
+      // route level code-splitting
+      // this generates a separate chunk (msgCenter.[hash].js) for this route
+      // which is lazy-loaded when the route is visited.
+      component: () => import(/* webpackChunkName: "msgCenter" */ './views/msgCenter')
+    }
+  ]
+})
+
+// 全局导航守卫
+// const isLogin = sessionStorage.token && sessionStorage.refreshToken && sessionStorage.userId;
+router.beforeEach((to, from, next) => {
+  const menuData = store.state.menuData;
+  let isCan = false; // 是否有权限访问
+  traversalTree(menuData, item => {
+    item.menuPath && item.menuPath === to.path && (isCan = true);
+  });
+  if (isCan) {
+    next();
+  }
+});
+
+export default router

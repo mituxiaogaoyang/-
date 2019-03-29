@@ -1,0 +1,1005 @@
+<template>
+  <div class="big-screen">
+    <div class="head">
+      <div class="title">
+        <span>凉山州</span>
+        <span>地质灾害监测预警系统</span>
+      </div>
+      <div class="head-con">
+        <Input search @on-search="search"></Input>
+        <div class="weather">天气</div>
+        <div class="userInfo">
+          <span>头像</span>
+          <span>admin</span>
+        </div>
+        <a class="goCtrlCenter" href="/#/">控制中心</a>
+      </div>
+    </div>
+    <div id="map-container"></div>
+    <div class="left-con">
+      <Icon type="md-rewind" :class="leftConVisible ? 'left' : 'right'" @click="leftConVisible=!leftConVisible" />
+      <div :class="leftConVisible ? 'opened' : 'closed'">
+        <div class="deviceStatus">
+          <div class="slider">
+            <div class="item">
+              <div class="title">
+                <span>设备运行状态统计</span>
+              </div>
+              <device-chart></device-chart>
+            </div>
+          </div>
+        </div>
+        <div class="shift">
+          <div>
+            <div class="slider slider1" :data-num="shiftChartArr.length" :style="{width:shiftChartArr.length*17.7+'rem'}">
+              <div class="item" v-for="(item, index) in shiftChartArr" :key="index">
+                <div class="title">
+                  <span>{{item.name}}</span>
+                  <Icon type="ios-arrow-forward" />
+                  <Icon type="ios-arrow-forward" />
+                </div>
+                <shift-chart></shift-chart>
+              </div>
+            </div>
+            <div class="slider slider2" :data-num="shiftChartArr.length" :style="{width:shiftChartArr.length*17.7+'rem'}">
+              <div class="item" v-for="(item, index) in shiftChartArr" :key="index">
+                <div class="title">
+                  <span>{{item.name}}</span>
+                  <Icon type="ios-arrow-forward" />
+                  <Icon type="ios-arrow-forward" />
+                </div>
+                <shift-chart></shift-chart>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="gnss">
+          <div>
+            <div class="slider slider1" :data-num="gnssChartArr.length" :style="{width:gnssChartArr.length*17.7+'rem'}">
+              <div class="item" v-for="(item, index) in gnssChartArr" :key="index">
+                <div class="title">
+                  <span>{{item.name}}</span>
+                  <Icon type="ios-arrow-forward" />
+                  <Icon type="ios-arrow-forward" />
+                </div>
+                <gnss-chart></gnss-chart>
+              </div>
+            </div>
+            <div class="slider slider2" :data-num="gnssChartArr.length" :style="{width:gnssChartArr.length*17.7+'rem'}">
+              <div class="item" v-for="(item, index) in gnssChartArr" :key="index">
+                <div class="title">
+                  <span>{{item.name}}</span>
+                  <Icon type="ios-arrow-forward" />
+                  <Icon type="ios-arrow-forward" />
+                </div>
+                <gnss-chart></gnss-chart>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="rainfall">
+          <div>
+            <div class="slider slider1" :data-num="rainfallChartArr.length" :style="{width:rainfallChartArr.length*17.7+'rem'}">
+              <div class="item" v-for="(item, index) in rainfallChartArr" :key="index">
+                <div class="title">
+                  <span>{{item.name}}</span>
+                  <Icon type="ios-arrow-forward" />
+                  <Icon type="ios-arrow-forward" />
+                </div>
+                <rainfall-chart></rainfall-chart>
+              </div>
+            </div>
+            <div class="slider slider2" :data-num="rainfallChartArr.length" :style="{width:rainfallChartArr.length*17.7+'rem'}">
+              <div class="item" v-for="(item, index) in rainfallChartArr" :key="index">
+                <div class="title">
+                  <span>{{item.name}}</span>
+                  <Icon type="ios-arrow-forward" />
+                  <Icon type="ios-arrow-forward" />
+                </div>
+                <rainfall-chart></rainfall-chart>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="right-top-con">
+      <Icon type="md-rewind" :class="rightConVisible ? 'right' : 'left'" @click="rightConVisible=!rightConVisible" />
+      <div :class="rightConVisible ? 'opened' : 'closed'">
+        <div class="warning-monitor">
+          <div class="title">预警监控</div>
+          <div class="item level1-color">
+            <div class="label">注意级</div>
+            <div class="num">{{warningMonitor.num1}}</div>
+          </div>
+          <div class="item level2-color">
+            <div class="label">警示级</div>
+            <div class="num">{{warningMonitor.num2}}</div>
+          </div>
+          <div class="item level3-color">
+            <div class="label">警戒级</div>
+            <div class="num">{{warningMonitor.num3}}</div>
+          </div>
+          <div class="item level4-color">
+            <div class="label">报警级</div>
+            <div class="num">{{warningMonitor.num4}}</div>
+          </div>
+        </div>
+        <div class="msg-notice">
+          <div class="title">
+            <span>消息通知</span>
+            <Icon type="ios-arrow-forward" />
+            <Icon type="ios-arrow-forward" />
+          </div>
+          <list-roll :dataSource="msgNotice"></list-roll>
+        </div>
+      </div>
+    </div>
+    <div class="right-bottom-con">
+      <div class="layer-ctrl">
+        <Icon type="logo-buffer" title="图层" />
+        <div class="layer-box">
+          <div class="layer-con">
+            <div class="item bottom">
+              <Checkbox :value="showItems[0]" @on-change="updateShowItems(0)">隐患点</Checkbox>
+            </div>
+            <div class="item bottom left">
+              <Checkbox :value="showItems[1]" @on-change="updateShowItems(1)">监测点</Checkbox>
+            </div>
+            <div class="item">
+              <Checkbox :value="showItems[2]" @on-change="updateShowItems(2)">地图标注</Checkbox>
+            </div>
+            <div class="item left">
+              <Checkbox :value="showItems[3]" @on-change="updateShowItems(3)">区域边界</Checkbox>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="go-home" id="goHomeBtn">
+        <Icon type="md-locate" title="回到初始化位置" />
+      </div>
+      <div class="measure" id="measureBtn" title="测距离"></div>
+      <div class="polygon" id="polygonBtn" title="测面积"></div>
+    </div>
+    <div class="fenceInfoWindow">
+      <div class="infoWindow-con">
+        <i class="angle angle-top-left"></i>
+        <i class="angle angle-bottom-left"></i>
+        <i class="angle angle-bottom-right"></i>
+        <i class="angle angle-top-right"></i>
+        <div class="infoWindow-head">
+          <span>标注点</span>
+          <Icon type="ios-close" @click="closeOverlay('fenceInfo')"></Icon>
+        </div>
+        <div class="infoWindow-body">
+          <div class="name">{{selectedFence.name}}</div>
+          <div>
+            <span class="_title">备注：</span>
+            <div class="_content" v-text="selectedFence.remarks || '无'"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="geoPointInfoWindow">
+      <div class="infoWindow-con">
+        <i class="angle angle-top-left"></i>
+        <i class="angle angle-bottom-left"></i>
+        <i class="angle angle-bottom-right"></i>
+        <i class="angle angle-top-right"></i>
+        <div class="infoWindow-head">
+          <span>{{selectedGeoPoint.typeCode == 0 ? '监测点' : '隐患点'}}</span>
+          <Icon type="ios-close" @click="closeOverlay('geoPointInfo')"></Icon>
+        </div>
+        <div class="infoWindow-body">
+          <div class="name">{{selectedGeoPoint.name}}</div>
+          <div>
+            <span class="_title">类型：</span>
+            <div class="_content">{{selectedGeoPoint.dictType}}</div>
+          </div>
+          <div>
+            <span class="_title">其他：</span>
+            <div class="_content">xxxxxxxxxxx</div>
+          </div>
+          <div class="infoWindow-btns">
+            <span>数据分析</span>
+            <span>数据查询</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+<script>
+import './index.less';
+import DeviceChart from '@/components/deviceChart';
+import ShiftChart from '@/components/shiftChart';
+import GnssChart from '@/components/gnssChart';
+import RainfallChart from '@/components/rainfallChart';
+import ListRoll from '@/components/listRoll';
+import MapTool from '@/lib/ol/mapTool';
+import { adaptFontSize } from '@/common/other';
+import Roll from '@/lib/roll';
+export default {
+  components: {
+    DeviceChart,
+    ShiftChart,
+    GnssChart,
+    RainfallChart,
+    ListRoll
+  },
+  data(){
+    return {
+      leftConVisible: true,
+      shiftChartArr: [
+        {
+          id: 1,
+          name: '拉线位移器监测11'
+        },
+        {
+          id: 2,
+          name: '拉线位移器监测22'
+        },
+        {
+          id: 3,
+          name: '拉线位移器监测33'
+        }
+      ],
+      gnssChartArr: [
+        {
+          id: 1,
+          name: 'GNSS表面位移监测11'
+        },
+        {
+          id: 2,
+          name: 'GNSS表面位移监测22'
+        }
+      ],
+      rainfallChartArr: [
+        {
+          id: 1,
+          name: '降雨量实时监测11'
+        },{
+          id: 2,
+          name: '降雨量实时监测22'
+        }
+      ],
+      rightConVisible: true,
+      warningMonitor: {
+        num1: 132,
+        num2: 32,
+        num3: 5,
+        num4: 1
+      },
+      msgNotice: [],
+      showItems: [true, true, true, true], // 右下角图层对应[隐患点，监测点，地图标注，区域边界]
+      selectedGeoPoint: {},
+      selectedFence: {}
+    };
+  },
+  beforeCreate(){
+    adaptFontSize();
+    window.addEventListener('resize', adaptFontSize);
+    // const isLogin = sessionStorage.token && sessionStorage.refreshToken && sessionStorage.userId;
+    // if (!isLogin) {
+    //   window.location.href = window.location.protocol + '//' + window.location.host + '/login';
+    // }
+  },
+  created(){
+    // 不需要监听的属性
+    this.mapTool = new MapTool({
+      isFitToAllGeos: false,
+      mousePosition: false,
+      measure: true,
+      polygon: true,
+      showFenceArea: true,
+      isShowBoundary: true,
+      hasFloatLayer: true
+    });
+  },
+  mounted(){
+    // 重写mapTool.addControl
+    this.mapTool.addControl = ({className, onclick}) => {
+      const btn = document.getElementById(className + 'Btn');
+      btn.addEventListener('click', onclick.bind(this.mapTool), false);
+    }
+    // 初始化地图
+    this.mapTool.init(document.getElementById('map-container'), 'googleSatellite');
+    this.bindInfoWindow();
+
+    this.msgNotice = [
+        {id:1,level:0,content:'头：正常1'},
+        {id:2,level:1,content:'注意级预警1'},
+        {id:3,level:2,content:'警示级预警1'},
+        {id:4,level:3,content:'警戒级预警1'},
+        {id:5,level:4,content:'报警级预警1'},
+        {id:6,level:1,content:'注意级预警2'},
+        {id:7,level:2,content:'警示级预警2'},
+        {id:8,level:3,content:'尾：警戒级预警2'}
+      ];
+    setTimeout(() => {
+      this.msgNotice = [
+        {id:1,level:0,content:'头：正常1'},
+        {id:2,level:1,content:'注意级预警1'},
+        {id:3,level:2,content:'警示级预警1'},
+        {id:4,level:3,content:'警戒级预警1'},
+        {id:5,level:4,content:'报警级预警1'},
+        {id:6,level:1,content:'注意级预警2'},
+        {id:7,level:2,content:'警示级预警2'},
+        {id:8,level:3,content:'尾：警戒级预警2'},
+        {id:9,level:4,content:'新增：报警级预警2'},
+        {id:10,level:1,content:'新增：注意级预警3'},
+        {id:11,level:2,content:'新增：警示级预警3'},
+        {id:12,level:3,content:'新增：警戒级预警3'}
+      ];
+    }, 20*1000);
+    this.startupSlider();
+
+    this.mapTool.loadGeos([
+      {id: 1, typeCode: 0, lng: 102.25,lat: 28.15, name: '001号监测点', dictType: '降雨量'},
+      {id: 2, typeCode: 1, lng: 102.45,lat: 28.25, name: '001号隐患点', dictType: '滑坡'},
+      {id: 3, typeCode: 2, lng: 102.58,lat: 28.32, name: '002号隐患点', dictType: '泥石流'},
+      {id: 4, typeCode: 1, lng: 102.3,lat: 28.12, name: '003号隐患点', dictType: '滑坡'},
+      {id: 5, typeCode: 2, lng: 102.47,lat: 28.18, name: '004号隐患点', dictType: '泥石流'},
+      {id: 6, typeCode: 0, lng: 102.62,lat: 28.23, name: '002号监测点', dictType: '降雨量'}
+    ]);
+    this.mapTool.addFence({
+      id: 1,
+      name: '001号标注点',
+      posCoordinateSystem: 0,
+      enabled: true,
+      fencePointData: '102.35,28.1;102.5,28.1;102.5,28;102.35,28;102.35,28.1'
+    });
+  },
+  destroyed(){},
+  methods: {
+    search(value){
+      const result = Object.keys(this.mapTool.geoPoints).find(id => {
+        const geoPoint = this.mapTool.geoPoints[id];
+        if(geoPoint && geoPoint.data.projectName === value){
+          this.mapTool.fitToCoords([geoPoint.getCoordinate()]);
+          this.showTipOverlay(geoPoint);
+          return true;
+        }
+      });
+      !result && this.$Message.info('该项目不存在');
+    },
+    closeOverlay(target){
+      this.mapTool.hideInfoWindow(target);
+    },
+    bindInfoWindow(){
+      this.mapTool.bindInfoWindow({
+        geoPoint: {
+          infoWindows: [
+            {
+              type: 'Info',
+              element: this.$el.eChildren('.geoPointInfoWindow')[0]
+            }
+          ],
+          selectedCallback: (geoPoint) => {
+            console.log(geoPoint);
+            this.selectedGeoPoint = geoPoint.data;
+          }
+        },
+        fence: {
+          infoWindows: [
+            {
+              type: 'Info',
+              element: this.$el.eChildren('.fenceInfoWindow')[0]
+            }
+          ],
+          selectedCallback: (fence) => {
+            console.log(fence);
+            this.selectedFence = fence.data;
+          }
+        }
+      });
+    },
+    startupSlider(){
+      // 方案二缺点两份图表占用资源
+      const _sliders1 = this.$el.querySelector('.left-con').querySelectorAll('.slider1'),
+        _sliders2 = this.$el.querySelector('.left-con').querySelectorAll('.slider2');
+      _sliders1.forEach((slider, i) => {
+        const num = slider.getAttribute('data-num');
+        const roll = new Roll(slider, {
+          cloneElem: _sliders2[i],
+          direction: 'left',
+          totalPageNum: num,
+          pageWidth: 17.7,
+          pageHeight: 9.4,
+          unit: 'rem',
+          rate: 6
+        });
+        roll.start();
+      });
+      // return;
+      // 方案一缺点从尾部到头部的动画不平滑
+      // const sliders = this.$el.querySelector('.left-con').querySelectorAll('.slider'),
+      //   rollRate = 6,
+      //   duration = 1;
+      // function step(dom, i, num){
+      //   setTimeout(() => {
+      //     dom.style.transform = `translate3d(${i * -17.7}rem, 0, 0)`;
+      //     dom.style.transition = `transform ${duration}s ease 0s`;
+      //     if(i + 1 == num){
+      //       i = 0;
+      //     }else{
+      //       i++;
+      //     }
+      //     step(dom, i, num);
+      //   }, rollRate * 1000);
+      // }
+      // sliders.forEach(slider => {
+      //   const num = slider.getAttribute('data-num');
+      //   num > 1 && step(slider, 1, num);
+      // });
+    },
+    updateShowItems(index){
+      this.showItems[index] = !this.showItems[index];
+      this.showItems.forEach((flag, i) => {
+        switch(i){
+          case 0:
+          // 隐患点
+          this.toggleMapItem(flag, 1);
+            break;
+          case 1:
+          // 监测点
+          this.toggleMapItem(flag, 0);
+            break;
+          case 2:
+          // 地图标注
+          this.toggleMapItem(flag, 2);
+            break;
+          case 3:
+          // 区域边界
+          this.toggleMapItem(flag, 3);
+            break;
+        }
+      });
+    },
+    toggleMapItem(flag, type){
+      try{
+        if(type === 0 || type === 1){
+          const geoPoints = this.mapTool.geoPoints;
+          Object.keys(geoPoints).forEach(id => {
+            const geoPoint = geoPoints[id];
+            const typeCode = geoPoint.data.typeCode;
+            if((type === 0 && typeCode == 0) || (type === 1 && (typeCode == 1 || typeCode == 2))){
+              flag ? geoPoint.show() : geoPoint.hide();
+              if(flag){
+                geoPoint.show();
+              }else{
+                geoPoint.hide();
+                geoPoint.data.id === this.selectedGeoPoint.id && this.mapTool.hideInfoWindow('geoPointInfo');
+              }
+            }
+          });
+        }else if(type === 2){
+          const fences = this.mapTool.fences;
+          Object.keys(fences).forEach(id => {
+            const fence = fences[id];
+            if(flag){
+              fence.show();
+            }else{
+              fence.hide();
+              this.mapTool.hideInfoWindow('fenceInfo');
+            }
+          });
+        }else if(type === 3){
+          flag ? this.mapTool.showBoundary() : this.mapTool.hideBoundary();
+        }
+      }catch(err){}
+    }
+  }
+}
+</script>
+<style lang="less">
+@font-face{
+  font-family: 'MyFont';
+  src: url('../../assets/font/庞门正道标题体2.0增强版.ttf');
+}
+html{
+  overflow: hidden;
+}
+.big-screen{
+  .level0-color{
+    color: #00FB5A;
+  }
+  .level1-color{
+    color: #E0E31A;
+  }
+  .level2-color{
+    color: #E19A00;
+  }
+  .level3-color{
+    color: #e14a00;
+  }
+  .level4-color{
+    color: #FF0006;
+  }
+  .left-con, .right-top-con{
+    .ivu-icon-md-rewind{
+      position: absolute;
+      top: -2.4rem;
+      width: 1.6rem;
+      height: 1rem;
+      background-color: rgba(255, 255, 255, 0.1);
+      text-align: center;
+      line-height: 1rem;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    .ivu-icon-md-rewind.left{
+    }
+    .ivu-icon-md-rewind.right{
+      transform: rotate(180deg);
+    }
+  }
+  .head{
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    z-index: 999999;
+    height: 3.5rem;
+    color: #fff;
+    .title{
+      float: left;
+      width: 14.3rem;
+    }
+    .head-con{
+      height: 3.5rem;
+      line-height: 3.5rem;
+      text-align: right;
+      margin-left: 15.8rem;
+      margin-right: 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      &>*{
+        display: inline-block;
+      }
+      .ivu-input-wrapper{
+        width: 14rem;
+        opacity: 0.14;
+        margin-right: 1.3rem;
+        .ivu-input-icon{
+          width: 1.8rem;
+          height: 1.8rem;
+          line-height: 1.8rem;
+        }
+        .ivu-input{
+          height: 1.8rem;
+          border-radius: 0.9rem;
+        }
+      }
+      .goCtrlCenter{
+        margin-right: 1.15rem;
+      }
+    }
+  }
+  .left-con{
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    z-index: 999999;
+    margin-top: -20.6rem;
+    .ivu-icon-md-rewind{
+      left: -1rem;
+    }
+    >div{
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 18.3rem;
+      height: 41.2rem;
+      &.closed{
+        left: -20rem;
+        transition: left 1s ease 0s;
+      }
+      &.opened{
+        left: 0;
+        transition: left 1s ease 0s;
+      }
+      >div{
+        height: 10rem;
+        padding: 0.3rem;
+        margin-top: 0.4rem;
+        border-radius: 0.3rem;
+        background-color: rgba(2, 17, 17, 0.5);
+        >div{
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+        }
+        .slider{
+          height: 100%;
+          &.started{
+            transform: translate3d(-17.7rem, 0, 0);
+            transition: transform 1s ease 5s;
+          }
+          .item{
+            float: left;
+            width: 17.7rem;
+            height: 9.4rem;
+            padding-top: 1.8rem;
+            position: relative;
+            .title{
+              position: absolute;
+              left: 0.5rem;
+              top: 0.5rem;
+              font-size: 0.8rem;
+              color: #0ff;
+              >:last-child.ivu-icon{
+                margin-left: -9px;
+              }
+            }
+            .chart{
+              height: 7.6rem;
+            }
+          }
+        }
+      }
+    }
+    .deviceStatus{
+      margin-top: 0;
+    }
+  }
+  .right-top-con{
+    position: absolute;
+    right: 0.7rem;
+    top: 6.6rem;
+    z-index: 999999;
+    >div{
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 18.3rem;
+      height: 21.4rem;
+      &.opened{
+        right: 0;
+        transition: right 1s ease 0s;
+      }
+      &.closed{
+        right: -20rem;
+        transition: right 1s ease 0s;
+      }
+    }
+    .ivu-icon-md-rewind{
+      right: -0.7rem;
+    }
+    .title{
+      font-size: 0.8rem;
+      color: #0ff;
+      margin-bottom: 0.25rem;
+    }
+    .warning-monitor{
+      height: 6.3rem;
+      padding: 0.7rem 0.8rem;
+      border-radius: 0.3rem;
+      background-color: rgba(2, 17, 17, 0.5);
+      .item{
+        float: left;
+        width: 25%;
+        padding-left: 0.3rem;
+        .label{
+          line-height: 1.5rem;
+          font-size: 0.7rem;
+        }
+        .num{
+          line-height: 2.2rem;
+          font-size: 1.5rem;
+          font-family: 'MyFont';
+        }
+      }
+    }
+    .msg-notice{
+      height: 14.7rem;
+      padding: 0.7rem 0.8rem;
+      margin-top: 0.4rem;
+      border-radius: 0.3rem;
+      background-color: rgba(2, 17, 17, 0.5);
+      position: relative;
+      .title{
+        position: absolute;
+        top: 0.7rem;
+        left: 0.8rem;
+        >.ivu-icon:last-child{
+          margin-left: -9px;
+        }
+      }
+      .list-roll{
+        height: 11.85rem;
+        margin-top: 1.45rem;
+      }
+    }
+  }
+  .right-bottom-con{
+    position: absolute;
+    right: 2rem;
+    bottom: 2.5rem;
+    width: 1.3rem;
+    height: 6.3rem;
+    z-index: 999999;
+    >div{
+      display: inline-block;
+      width: 1.3rem;
+      height: 1.3rem;
+      line-height: 1.3rem;
+      background-color: rgba(255, 255, 255, 0.1);
+      vertical-align: bottom;
+      margin-top: 0.35rem;
+      text-align: center;
+      >.ivu-icon{
+        font-size: 1rem;
+        color: #8D9798;
+        cursor: pointer;
+      }
+      &.layer-ctrl{
+        margin-top: 0;
+        &:hover{
+          background-color: #FF9000;
+          .ivu-icon{
+            color: #fff;
+          }
+          .layer-box{
+            display: block;
+          }
+        }
+        &>span{
+          cursor: pointer;
+        }
+        .layer-box{
+          display: none;
+          position: absolute;
+          right: 1.3rem;
+          top: 0;
+          width: 10.6rem;
+          text-align: left;
+          .layer-con{
+            width: 10rem;
+            height: 2.6rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 0.15rem;
+            padding: 0.2rem 0.6rem;
+            position: relative;
+            .item{
+              float: left;
+              width: 50%;
+              color: rgba(255, 255, 255, 0.5);
+              line-height: 1.1rem;
+              .ivu-checkbox-inner{
+                width: 0.7rem;
+                height: 0.7rem;
+                background-color: #B2B5B5;
+              }
+              .ivu-checkbox-inner:after{
+                width: 0.25rem;
+                height: 0.45rem;
+                top: 0;
+                left: 3px;
+                transform: rotate(45deg) scale(1);
+              }
+              .ivu-checkbox-focus{
+                box-shadow: none;
+              }
+              .ivu-checkbox-checked .ivu-checkbox-inner{
+                border-color: #FF9000;
+                background-color: #FF9000;
+              }
+              .ivu-checkbox-wrapper{
+                margin-right: 0;
+              }
+              &.left{
+                border-left: 1px solid rgba(255, 255, 255, 0.1);
+                padding-left: 0.4rem;
+              }
+              &.bottom{
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+              }
+            }
+            &:after{
+              position: absolute;
+              right: -10px;
+              top: 3px;
+              content: '';
+              border: 5px solid transparent;
+              border-top-color: rgba(255, 255, 255, 0.1);
+              transform: rotate(-90deg);
+            }
+          }
+        }
+      }
+      &.go-home:hover{
+        background-color: #FF9000;
+        .ivu-icon{
+          color: #fff;
+        }
+      }
+      &.measure{
+        cursor: pointer;
+        position: relative;
+        &:hover{
+          background-color: #FF9000;
+        }
+        &:after{
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
+          height: 100%;
+          background-image: url(../../assets/map/measure.png);
+          background-size: 0.75rem 0.75rem;
+          background-repeat: no-repeat;
+          background-position: center;
+        }
+      }
+      &.polygon{
+        cursor: pointer;
+        position: relative;
+        &:hover{
+          background-color: #FF9000;
+        }
+        &:after{
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
+          height: 100%;
+          background-image: url(../../assets/map/polygon.png);
+          background-size: 0.75rem 0.75rem;
+          background-repeat: no-repeat;
+          background-position: center;
+        }
+      }
+    }
+  }
+}
+#map-container{
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background-color: #021e21;
+  .tooltip{
+    background-color: rgba(2, 17, 17, 0.5);
+    padding: 8px 20px;
+    border-radius: 32px;
+    line-height: 16px;
+    color: #0ff;
+    position: relative;
+    i{
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      &:after{
+        content: ' ';
+        position: absolute;
+        left: -10px;
+        bottom: -20px;
+        border: 10px solid transparent;
+        border-top-color: #fff;
+      }
+    }
+  }
+  .fenceInfoWindow,
+  .geoPointInfoWindow,
+  .markerInfoWindow {
+    position: absolute;
+    z-index: 1;
+    width: 230px;
+    color: #02F1F1;
+    .infoWindow-con {
+      background: linear-gradient(135deg, transparent 10px, rgba(0,29,29,0.7)0) top left, 
+                  linear-gradient(-135deg, transparent 10px, rgba(0,29,29,0.7) 0) top right, 
+                  linear-gradient(-45deg, transparent 10px, rgba(0,29,29,0.7) 0) bottom right,
+                  linear-gradient(45deg, transparent 10px, rgba(0,29,29,0.7) 0) bottom left;
+      background-size: 50% 50%;
+      background-repeat: no-repeat;
+      position: relative;
+      >.angle{
+        position: absolute;
+        width: 50px;
+        height: 50px;
+        &.angle-top-left{
+          top: 0;
+          left: 0;
+          background-image: url('../../assets/map/dialog-top-left.png');
+        }
+        &.angle-top-right{
+          top: 0;
+          right: 0;
+          background-image: url('../../assets/map/dialog-top-right.png');
+        }
+        &.angle-bottom-right{
+          bottom: 0;
+          right: 0;
+          background-image: url('../../assets/map/dialog-bottom-right.png');
+        }
+        &.angle-bottom-left{
+          bottom: 0;
+          left: 0;
+          background-image: url('../../assets/map/dialog-bottom-left.png');
+        }
+      }
+      .infoWindow-head {
+        height: 36px;
+        line-height: 36px;
+        padding: 0 24px;
+        text-align: right;
+        span {
+          float: left;
+          display: inline-block;
+          vertical-align: top;
+          font-family: 'MyFont';
+          font-size: 18px;
+          color: #02F1F1;
+          border-bottom: 2px solid #02F1F1;
+        }
+        .ivu-icon{
+          font-size: 30px;
+          margin-right: -10px;
+          cursor: pointer;
+        }
+      }
+      .infoWindow-body {
+        padding: 14px 24px;
+        .name{
+          font-size: 18px;
+          font-weight: 700;
+          margin-bottom: 6px;
+        }
+        >div {
+          font-size: 14px;
+          height: 22px;
+          >span._title {
+            float: left;
+            color:rgba(2,241,241,0.6);
+          }
+          >div._content {
+            margin-left: 60px;
+            word-wrap: break-word;
+          }
+        }
+      }
+      .infoWindow-btns {
+        text-align: center;
+        padding-top: 16px;
+        span {
+          display: inline-block;
+          width: 71px;
+          height: 26px;
+          line-height: 26px;
+          color: #000;
+          background-color: rgba(230,221,10,0.8);
+          border-radius: 4px;
+          cursor: pointer;
+          &:first-child{
+            margin-right: 33px;
+          }
+        }
+      }
+      &:before {
+        position: absolute;
+        left: 101px;
+        bottom: -28px;
+        content: '';
+        border-width: 14px;
+        border-style: solid;
+        border-color: transparent;
+        border-top-color: rgba(0,29,29,0.7);
+      }
+      &:after{
+        position: absolute;
+        left: 103px;
+        bottom: -16px;
+        content: '';
+        width: 24px;
+        height: 14px;
+        background-image: url('../../assets/map/dialog-arrow.png');
+        background-repeat: no-repeat;
+      }
+    }
+  }
+}
+</style>

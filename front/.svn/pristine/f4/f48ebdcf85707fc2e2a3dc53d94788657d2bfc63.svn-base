@@ -1,0 +1,19 @@
+/**
+ * @authors remy
+ * @creatTime 2019-03-12 14:42:01
+ * @description 预警数据相关接口
+ * @version 0.0.1
+ */
+
+import { apiRequest } from './index';
+
+export function getData(){
+  return apiRequest({
+    code: 0,
+    data: {
+      dataList: [],
+      pageNum: 1,
+      totalNum: 1
+    }
+  });
+}

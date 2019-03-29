@@ -1,0 +1,431 @@
+<template>
+	<div class="content_hide_points">
+		<div class="bar_tree">
+			<menu-tree></menu-tree>
+		</div>
+		<div class="content-box">
+		  <div class="toolbar">
+				<Button type="primary" @click="add" class="btn_add" icon="md-add">新建点位</Button>
+				<Button type="primary" @click="leadIn" class="btn_white">导入</Button>
+				<Button type="primary" @click="leadOut" class="btn_white">导出</Button>
+				<div class="rightBar">
+					<Input search  @search="search"/>
+				</div>
+		  </div>
+		  <ori-table :columns= "columns" :dataSource="dataSource" :loading="loading" :adaptCount="adaptCount"
+		    :currentPage="currentPage" :totalPage="totalPage" :getData="getData"></ori-table>
+		</div>
+		<edit-modal :title="methodDeal+'隐患点'" :submiting="isSubmit"  @sure='submitData' @cancel="close">
+			<div class="form_main">
+				<div class="title">基本信息</div>
+				<ul class="input_box">
+					<li v-for='obj in form.inputLists' :key='obj.idFor'>
+						<label :for="obj.idFor">{{obj.label}}</label>
+						<Input v-model="obj.v" placeholder="" :element-id="obj.idFor" size="small"/>
+					</li>
+					<li class="full">
+						<div class="label">灾害类型</div>
+						<RadioGroup v-model="form.type">
+							  <Radio :label="list.id" v-for='list in form.types' :key='list.id'>{{list.value}}</Radio>
+						</RadioGroup>
+					</li>
+					<li class="full">
+						<div class="label">威胁对象</div>
+						<CheckboxGroup v-model="form.objPoints">
+								<Checkbox :label="list.id" v-for='list in form.objAll' :key="list.id">{{list.value}}</Checkbox>
+						</CheckboxGroup>
+					</li>
+				</ul>
+				<div class="title">其他</div>
+				<Input v-model="form.text" type="textarea" :rows="2" placeholder="Enter something..." />
+			</div>
+		</edit-modal>
+		<Modal
+			v-model="detailShow"
+			width='900'
+			title="隐患点详情">
+			<div class="form_main">
+				<div class="title">基本信息</div>
+				<ul class="input_box">
+					<li v-for='obj in form.inputLists' :key='obj.idFor'>
+						<label>{{obj.label}}</label>
+						<div class="answer">{{obj.v}}</div>
+					</li>
+					<li>
+						<label>灾害类型</label>
+						<div class="answer">{{typeDisaster}}</div>
+						<!-- <RadioGroup v-model="form.type">
+							  <Radio :label="list.id" v-for='list in form.types' :key='list.id'>{{list.value}}</Radio>
+						</RadioGroup> -->
+					</li>
+					<li>
+						<label>威胁对象</label>
+						<div class="answer">{{objThreat}}</div>
+						<!-- <CheckboxGroup v-model="form.objPoints">
+								<Checkbox :label="list.id" v-for='list in form.objAll' :key="list.id">{{list.value}}</Checkbox>
+						</CheckboxGroup> -->
+					</li>
+				</ul>
+				<div class="title">其他</div>
+				<div class="words">{{form.text}}</div>
+			</div>
+	    <div slot="footer">
+	      <Button type="primary" @click="detailShow=false">关闭</Button>
+	    </div>
+		</Modal>
+    <map-location :coordinateStr="coordinateStr" :type="geoPointType"></map-location>
+	</div>
+</template>
+<script>
+import * as api from '@/api/hideDangerPoint';
+import OriTable from '@/components/OriTable';
+import EditModal from '@/components/EditModal';
+import { formatLevel } from '@/common/format';
+import menuTree from '@/components/MenuTree';
+import MapLocation from '@/components/MapLocation';
+export default {
+  components: {
+	  OriTable,
+		EditModal,
+		menuTree,
+	  MapLocation
+  },
+  data(){
+    return {
+			form:{
+				inputLists:[
+					{label:'名称',v:'',idFor:'jcca02A011',},
+					{label:'编号',v:'',idFor:'jcca02A010'},
+					{label:'所属市州',v:'',idFor:'jcca02A902'},
+					{label:'所属区县',v:'',idFor:'jcca02A903'},
+					{label:'乡镇',v:'',idFor:'jcca02A904'},
+					{label:'村',v:'',idFor:'jcca02A905'},
+					{label:'经度',v:'',idFor:'jcca02A906'},
+					{label:'纬度',v:'',idFor:'jcca02A907'},
+				],
+				type:'1',
+				types:[
+					{id:'1',value:'滑坡'},
+					{id:'2',value:'泥石流'},
+					{id:'3',value:'崩塌'},
+					{id:'4',value:'地面塌陷'},
+					{id:'5',value:'潜在不稳定斜坡'},
+					{id:'6',value:'其他'},
+				],
+				objPoints:[1,2],
+				objAll:[
+					{id:'1',value:'分散农户'},
+					{id:'2',value:'集聚区'},
+					{id:'3',value:'学校'},
+					{id:'4',value:'场镇'},
+					{id:'5',value:'县城'},
+					{id:'6',value:'公路'},
+					{id:'7',value:'河道'},
+					{id:'8',value:'其他'},
+				],
+				scale:[
+					{label:'长/高(m)',v:'',idFor:'high'},
+					{label:'宽(m)',v:'',idFor:'width'},
+					{label:'体积(万m^2)',v:'',idFor:'volume'},
+					{label:'流域面积(km2)',v:'',idFor:'area'},
+					{label:'沟长(km)',v:'',idFor:'length'},
+				],
+				text:''
+			},
+	    columns: [
+				{
+					title:'隐患点名称',
+					key:'jcca02A011',
+					minWidth:120
+				},
+				{
+					title:'隐患点编号',
+					key:'jcca02A010',
+					minWidth:120
+				},
+				{
+					title:'类型',
+					key:'type',
+					minWidth:80
+				},
+				{
+					title:'地理位置',
+					key:'position',
+					minWidth:200
+				},
+				{
+					title:'威胁对象',
+					key:'object',
+					width:150,
+					render: (h,param)=>{
+						return h('div',this.numberToWord(param.row.jcca02A909))
+					}
+				},
+	      {
+	        title: '操作',
+	        key: 'operate',
+	        minWidth: 210,
+	        render: (h, param) => {
+	          return h('div',[
+							h('Button', {
+							  props: {
+							    size: 'small',
+									type:'text'
+							  },
+							  on: {
+							    click: () => {
+								  let dataT = param.row
+							      this.detailShow = true;
+								  this.form.inputLists.forEach(obj=>{
+								  	obj.v = dataT[obj.idFor]
+								  })
+								  this.form.type = dataT.jcca02A908 
+								  this.form.objPoints =dataT.jcca02A909.split(',') 
+								  this.form.text = dataT.jcca02A914 
+							    }
+							  }
+							}, '详情'),
+							h('Button', {
+							  props: {
+							    size: 'small',
+									type:'text'
+							  },
+							  on: {
+							    click: () => {
+							      this.coordinateStr = param.row.jcca02A906 + ',' + param.row.jcca02A907;
+							      this.geoPointType = 'geoPoint_danger' + param.row.jcca02A908;
+						        this.$store.commit('modal/openMapDetail');
+							    }
+							  }
+							}, '定位'),
+							h('Button', {
+							  props: {
+							    size: 'small',
+									type:'text'
+							  },
+							  on: {
+							    click: () => {
+									let dataT = param.row
+									this.methodDeal = '编辑',
+									this.isSubmit = false 
+									this.form.inputLists.forEach(obj=>{
+										obj.v = dataT[obj.idFor]
+									})
+									this.form.type = dataT.jcca02A908 
+									this.form.objPoints =dataT.jcca02A909.split(',') 
+									this.form.text = dataT.jcca02A914 
+							       this.$store.commit('modal/openEdit');
+							    }
+							  }
+							}, '编辑'),
+							h('Button', {
+							  props: {
+							    size: 'small',
+								type:'text'
+							  },
+							  on: {
+							    click: () => {
+										this.$Modal.confirm({
+												title: '',
+												content: '<p>确认删除该隐患点？</p>',
+												center:true,
+												onOk: () => {
+														this.deletePoint(param.row.jcca02A010);
+												}
+										});
+							      
+							    }
+							  }
+							}, '删除'),
+						]);
+	        }
+	      }
+	    ],
+	    dataSource: [],
+	    loading: true,
+	    adaptCount: 0,
+	    currentPage: 1,
+	    totalPage: 1,
+	    pageSize: 10,
+			methodDeal:'新增',
+			isSubmit:false,
+			detailShow:false,
+			typeDisaster:'',
+			objThreat:'',
+			geoPointType: '',
+	    coordinateStr: ''
+    };
+  },
+  created(){
+    this.getData()
+  },
+  mounted(){
+  },
+  destroyed(){
+  },
+  methods: {
+	numberToWord(str){
+		let arr = str.split(',')
+		let arr2 =[]
+		arr.forEach(v=>{
+			switch(v){
+				case '1': arr2.push('分散农户');break
+				case '2': arr2.push('聚集区');break
+				case '3': arr2.push('学校');break
+				case '4': arr2.push('城镇');break
+				case '5': arr2.push('县城');break
+				case '6': arr2.push('公路');break
+				case '7': arr2.push('河道');break
+				default: arr2.push('其他');break
+			}
+		})
+		return arr2.join(',')
+	},
+    getData(pageNum){
+      this.loading = true
+      api.getData({con:'喜德县',pageNum: pageNum || 1, pageSize: this.pageSize})
+      .then(result => {
+		  let arrResult = result.dataList;
+		  arrResult.forEach(v=>{
+			  v.position = v.jcca02A901+v.jcca02A902+v.jcca02A903+v.jcca02A904+v.jcca02A905
+			  console.log(typeof (v.jcca02A908))
+			  switch(v.jcca02A908 ){
+				  case '1': v.type ='滑坡';break
+				  case '2': v.type ='泥石流';break
+				  case '3': v.type ='崩塌';break
+				  case '4': v.type ='地面塌陷';break
+				  case '5': v.type ='潜在不稳定斜坡';break
+				  case '6': v.type ='其他';break
+			  }
+			  
+// 			  (v.jcca02A909.split(',')).forEach(val=>{
+// 			  	switch(val){
+// 			  		case '1': v.object.push('分散农户');break
+// 			  		case '2': v.object.push('聚集区');break
+// 			  		case '3': v.object.push('学校');break
+// 			  		case '4': v.object.push('城镇');break
+// 			  		case '5': v.object.push('县城');break
+// 			  		case '6': v.object.push('公路');break
+// 			  		case '7': v.object.push('河道');break
+// 			  		case '8': v.object.push('其他');break
+// 			  	}
+// 			  })
+		  })
+          this.dataSource = arrResult;
+          this.currentPage = pageNum;
+          this.totalPage = result.totalNum;
+          this.loading = false;
+          this.adaptCount++;
+      });
+    },
+	add(){
+		this.methodDeal = '新增'
+		this.$store.commit('modal/openEdit');
+	},
+	leadIn(){
+		
+	},
+	leadOut(){
+		
+	},
+	search(){},
+	close(){
+		this.$store.commit('modal/closeEdit');
+		this.form.type = '1'
+		this.form.objPoints = []
+		this.form.text = '' 
+		this.form.inputLists.forEach(obj=>{
+			obj.v = ''
+		})
+	},
+	submitData(){
+		this.isSubmit = true
+		let type = (this.methodDeal === '新增')?'save':'update'
+		let dataObj = {}
+		this.form.inputLists.forEach(obj=>{
+			 dataObj[obj.idFor] = obj.v
+		})
+		 dataObj.jcca02A908 = this.form.type
+		 dataObj.jcca02A909 = this.form.objPoints.join(',')
+		 dataObj.jcca02A914 =this.form.text
+		api.saveData(type,dataObj).then(result=>{
+			this.isSubmit = false 
+			this.$Message.info({content:this.methodDeal+'成功',duration:10});
+			this.close();
+			this.getData(this.currentPage)
+		}).catch(err=>{
+			this.isSubmit = false
+		})
+	},
+	deletePoint(id){
+		api.deleteData(id).then(result=>{
+			this.$Message.info('删除成功');
+			this.getData(this.currentPage)
+		})
+	}
+  }
+}
+</script>
+<style scoped lang="less">
+	.form_main{
+		.title{
+			font-size: 15px;
+			margin: 9px 0 5px;
+		}
+		.input_box{
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: space-between;
+			margin-bottom: 5px;
+			li{
+				width:46%;
+				margin-bottom:12px ;
+				label{
+				  margin-bottom: 3px;
+				  display: inline-block;
+				  font-size: 13px;
+				  width:70px;
+				  
+				}
+				&.full{
+					width:100%;
+					label{width:auto;}
+				}
+			}
+			.ivu-input-wrapper{
+				width:72%;
+			}
+			.answer{width:72%;display: inline-block}
+		}
+		.ivu-radio-wrapper{margin-right: 12px}
+		.ivu-checkbox-wrapper{margin-right: 12px}
+		.ivu-radio-inner{
+			border-color:#f39800!important;
+		}
+		.ivu-radio-inner:after{background-color: #f39800}
+		.label{
+			margin-top:5px;
+			font-size: 13px;
+			display: inline-block;
+			width:70px;
+		}
+		.ivu-checkbox-group{display: inline-block;}
+		.scale{
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: space-between;
+			margin-bottom: 5px;
+			li{
+				width:32%;
+				margin-bottom:12px ;
+				label{
+				  margin-bottom: 3px;
+					display: inline-block;
+					font-size: 13px;
+					width:90px;
+				}
+			}
+			.ivu-input-wrapper{width:50%}
+		}
+	}
+</style>

@@ -1,0 +1,96 @@
+<template>
+  <div class="content-box">
+    <div class="toolbar">
+    </div>
+    <ori-table :columns= "columns" :dataSource="dataSource" :loading="loading" :adaptCount="adaptCount"
+      :currentPage="currentPage" :totalPage="totalPage" :getData="getData"></ori-table>
+  </div>
+</template>
+<script>
+import * as api from '@/api/device';
+import OriTable from '@/components/OriTable';
+export default {
+  components: {
+    OriTable
+  },
+  data(){
+    return {
+      columns: [
+        {
+          title: '序号',
+          type: 'index',
+          width: 60
+        },
+        {
+          title: '仪器编号',
+          key: 'code',
+          width: 180
+        },
+        {
+          title: '监测仪器名称',
+          key: 'name',
+          width: 120
+        },
+        {
+          title: '监测仪器型号',
+          key: 'model',
+          width: 120
+        },
+        {
+          title: '生产单位',
+          key: 'factoryName',
+          width: 100
+        },
+        {
+          title: '厂家率定系数',
+          key: 'defaultCoefficient',
+          width: 120
+        },
+        {
+          title: '温度修正系数',
+          key: 'temperatureCoefficient',
+          width: 120
+        },
+        {
+          title: '初始值',
+          key: 'originValue',
+          width: 80
+        },
+        {
+          title: '备注',
+          key: 'remark'
+        }
+      ],
+      dataSource: [],
+      loading: true,
+      adaptCount: 0,
+      currentPage: 1,
+      totalPage: 1,
+      pageSize: 10
+    };
+  },
+  created(){
+    this.getData();
+  },
+  mounted(){
+  },
+  destroyed(){
+  },
+  methods: {
+    getData(pageNum){
+      this.loading = true
+      api.getData({pageNum: pageNum || 1, pageSize: this.pageSize})
+      .then(result => {
+          this.dataSource = result.dataList;
+          this.currentPage = result.pageNum;
+          this.totalPage = result.totalNum;
+          this.loading = false;
+          this.adaptCount++;
+      });
+    }
+  }
+}
+</script>
+<style scoped lang="less">
+.device {}
+</style>

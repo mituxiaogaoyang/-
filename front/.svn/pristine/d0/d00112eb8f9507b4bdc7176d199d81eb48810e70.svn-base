@@ -1,0 +1,21 @@
+<template>
+  <div class="chart device-chart"></div>
+</template>
+<script>
+import echarts from '@/common/echarts.custom';
+export default {
+  name: 'device-chart',
+  data(){
+    return {};
+  },
+  created(){},
+  mounted(){
+    this.chart = echarts.init(this.$el);
+    const option = {};
+    this.chart.setOption(option);
+  },
+  methods: {}
+}
+</script>
+<style scoped lang="less">
+</style>

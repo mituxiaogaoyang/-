@@ -1,0 +1,22 @@
+/**
+ * @authors remy
+ * @creatTime 2019-03-13 14:34:14
+ * @description 首页状态仓库
+ * @version 0.0.1
+ */
+
+export default {
+  namespaced: true,
+  state: {
+
+  },
+  getters: {
+
+  },
+  mutations: {
+
+  },
+  actions: {
+
+  }
+}

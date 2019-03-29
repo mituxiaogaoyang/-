@@ -1,0 +1,241 @@
+<template>
+	<div class="content-box">
+		<div class="toolbar">
+			<div class="select_list">
+				<span class="label">选择隐患点：</span>
+				<Select v-model="search.yhdNo" @on-change="changeYhd" clearable>
+					<Option v-for="item in pointsHide" :value="item.value" :key="item.value">{{ item.label }}</Option>
+				</Select>
+			</div>
+			<div class="select_list">
+				<span class="label">选择监测点：</span>
+				<Select v-model="search.jcdNo" clearable>
+					<Option v-for="item in pointsMonitor" :value="item.value" :key="item.value">{{ item.label }}</Option>
+				</Select>
+			</div>
+			<div class="select_list">
+				<span class="label">选择时间：</span>
+				<DatePicker type="daterange" format="yyyy-MM-dd" :value='dateRange' :options="datePickerOpts" placement="bottom-end" :clearable="false" :editable="false"></DatePicker>
+			</div>
+			 <Button type="primary" class="btn_select" @click="getData">查询</Button>
+		</div>
+		<div class="panel_box">
+			<Tabs value="name0">
+				<TabPane :label="obj.name" :name="'name'+i" v-for='(obj,i) in panels' :key='obj.id'>
+					<div class="panel_content" v-if='obj.type===1'>
+						<div class="chart_shell">
+							<rainfall-chart></rainfall-chart>
+						</div>
+						<div class="data_lists">
+							<div class="list" v-for='data in obj.dataLists' :key="data.label">
+								<div class="label">{{data.label}}</div>
+								<div class="val"><span class="number">{{data.value}}</span>{{data.unit}}</div>
+							</div>
+						</div>
+					</div>
+					<div class="panel_content" v-if='obj.type===2'>
+						<div class="chart_shell">
+							<shift-chart></shift-chart>
+						</div>
+					</div>
+					<div class="panel_content" v-if='obj.type===3'>
+						<gnss :jcdNo="obj.jcdNo" :dateRange="dateRange"></gnss>
+					</div>
+				</TabPane>
+			</Tabs>
+		</div>
+		
+	</div>
+</template>
+
+<script>
+	import DeviceChart from '@/components/deviceChart';
+	import ShiftChart from '@/components/shiftChart';
+	import Gnss from './gnss';
+	import RainfallChart from '@/components/rainfallChart';
+	import { limitDateStr } from '@/common/other';
+	import * as yhdApi from '@/api/hideDangerPoint';
+	import * as jcdApi from '@/api/monitorPoint';
+	export default {
+		components:{
+			DeviceChart,
+			ShiftChart,
+			Gnss,
+			RainfallChart
+		},
+		data(){
+			return{
+				dateRange: [new Date(), new Date()],
+        datePickerOpts: {
+          disabledDate(currentDate){
+            // 只能选择limitDate及之后的日期
+            return Date.parse(new Date(limitDateStr)) >= Date.parse(currentDate);
+          }
+        },
+        search: {
+        	yhdNo: '',
+        	jcdNo: ''
+        },
+				pointsHide:[],
+				pointsMonitor:[],
+				panels:[
+					// {id:1,type:1,name:'x雨量计',
+					// 	dataLists:[
+					// 		{label:'总降雨量',value:'260',unit:'mm'},
+					// 		{label:'日均降雨量',value:'26',unit:'mm'},
+					// 		{label:'时均降雨量',value:'8',unit:'mm'},
+					// 		{label:'日最大雨强',value:'18',unit:'mm/d'},
+					// 		{label:'时最大雨强',value:'5',unit:'mm/h'},
+					// 		{label:'日最小雨强',value:'11',unit:'mm/d'},
+					// 		{label:'时最小雨强',value:'3',unit:'mm/h'},
+					// 	],
+					// },
+					// {id:2,type:2,name:'x拉线位移计'},
+					// {id:3,type:3,name:'xGNSS表面位移站'},
+					// {id:4,type:1,name:'xxx雨量计'},
+				]
+			}
+		},
+		created(){
+			this.getAllYhd();
+			this.getJcdByYhd('select');
+		},
+		methods:{
+			changeYhd(){
+				this.search.jcdNo = '';
+				this.pointsMonitor = [];
+				this.getJcdByYhd('select');
+			},
+			getData(){
+				this.getJcdByYhd('tab');
+			},
+			getAllYhd(){
+				yhdApi.getAllData().then(result => {
+					this.pointsHide = result.map(item => {
+						return {
+							label: item.jcca02A011,
+							value: item.jcca02A010
+						};
+					});
+				});
+			},
+			getJcdByYhd(type){
+				jcdApi.getAllData(this.search.yhdNo).then(result => {
+					if(type === 'select'){
+						this.pointsMonitor = result.map(item => {
+							return {
+								label: item.jcca03A011,
+								value: item.jcca03A010
+							};
+						});
+					}else if(type === 'tab'){
+						let data = result;
+						if(this.search.jcdNo){
+							const findRes = result.find(item => this.search.jcdNo == item.jcca03A010);
+							data = [findRes];
+						}
+						data = data.map(item => {
+							return {
+								id: item.id,
+								name: item.jcca03A011,
+								type: 3,
+								jcdNo: item.jcca03A010
+							};
+						});
+						this.panels = data;
+					}
+				});
+			}
+		}
+	}
+</script>
+
+<style lang="less">
+	@font-face{
+		font-family: 'MyFont';
+		src: url('../../assets/font/pangmen.otf');
+		src: url('../../assets/font/pangmen.ttf');
+		src: url('../../assets/font/pangmen.woff');
+	}
+	.select_list{
+		margin:0 10px;
+		display: inline-block
+	}
+	.btn_select{
+		margin-left:12px;
+		background-color:#f39800!important
+	}
+	.ivu-tabs-nav-scrollable{
+		padding: 0 20px;
+	}
+	.ivu-tabs-bar{
+		border-bottom:0;
+		margin-bottom:0;
+	}
+	.ivu-tabs-content{
+		// background-color: rgba(255,255,255,.04);
+		.ivu-tabs-tabpane{
+			background-color: rgba(255,255,255,.04);
+		}
+	}
+	.ivu-tabs-nav .ivu-tabs-tab{
+		color:rgba(0, 255, 255, 0.6);
+		&:hover{
+			color:#00ffff;
+		}
+		&.ivu-tabs-tab-active{
+			color:#00ffff;
+			background-color: rgba(255,255,255,.04);
+		}
+	}
+	.ivu-tabs-ink-bar{display: none}
+	.ivu-tabs-nav-container{margin-bottom:0;}
+	.panel_box{
+		margin:0 16px;
+		padding-top:18px;
+		.panel_content{
+			margin-top:64px;
+			min-height: 500px;
+			position: relative;
+			.chart_shell{
+				height:420px;
+				margin-right:420px;
+				.chart{
+					height:100%;
+				}
+			}
+			.data_lists{
+				width:300px;
+				position: absolute;
+				right:24px;
+				display: flex;
+				justify-content: space-between;
+				flex-wrap: wrap;
+				font-size: 16px;
+				color:rgba(255,255,255,.3);
+				top:-30px;
+				.list{
+					width:45%;
+					margin:16px 0;
+					.label{
+						margin-bottom: 8px;
+					}
+					.val{	
+						.number{
+							font-size: 20px;
+							font-family: 'MyFont';
+						}
+					}
+					&:first-child{
+						width:100%;
+						.val{
+							.number{
+								font-size: 40px;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+</style>

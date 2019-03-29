@@ -1,0 +1,237 @@
+<template>
+	<div class="content-box">
+		<div class="toolbar">
+			<div class="select_list">
+				<span class="label">选择隐患点：</span>
+				<Select v-model="search.val1" style="width:150px">
+					<Option v-for="item in pointsHide" :value="item.value" :key="item.value">{{ item.label }}</Option>
+				</Select>
+			</div>
+			<div class="select_list">
+				<span class="label">选择监测点：</span>
+				<Select v-model="search.val2" style="width:150px">
+					<Option v-for="item in pointsMonitor" :value="item.value" :key="item.value">{{ item.label }}</Option>
+				</Select>
+			</div>
+			<div class="select_list">
+				<span class="label">选择时间：</span>
+				<DatePicker type="daterange" :value='search.val3'  placement="bottom-end" placeholder="选择时间" style="width: 200px" @on-change="timeSelect"></DatePicker>
+			</div>
+			 <Button type="primary" class="btn_select">确定</Button>
+		</div>
+		<div class="panel_box">
+			<Tabs value="name0">
+				<TabPane label="雨量数据" name="name0">
+					<ori-table :columns= "columns1" :dataSource="dataSource1" :loading="loading" :adaptCount="adaptCount1"
+					  :currentPage="currentPage1" :totalPage="totalPage1" :getData="getData1"></ori-table>
+				</TabPane>
+				<TabPane label="拉线位移数据" name="name1">
+					<ori-table :columns= "columns2" :dataSource="dataSource2" :loading="loading" :adaptCount="adaptCount2"
+					  :currentPage="currentPage2" :totalPage="totalPage2" :getData="getData2"></ori-table>
+				</TabPane>
+				<TabPane label="GNSS位置数据" name="name2">
+					<ori-table :columns= "columns3" :dataSource="dataSource3" :loading="loading" :adaptCount="adaptCount3"
+					  :currentPage="currentPage3" :totalPage="totalPage3" :getData="getData3"></ori-table>
+				</TabPane>
+			</Tabs>
+		</div>
+		
+	</div>
+</template>
+
+<script>
+	import * as api from '@/api/hideDangerPoint';
+	import OriTable from '@/components/OriTable';
+	export default {
+		components:{
+			OriTable,
+		},
+		data(){
+			return{
+				search:{
+					val1:'2',
+					val2:'3',
+					val3:[]
+				},
+				pointsHide:[
+					{label:'隐患点1',value:'1'},
+					{label:'隐患点2',value:'2'},
+					{label:'隐患点3',value:'3'},
+					{label:'隐患点4',value:'4'}
+				],
+				pointsMonitor:[
+					{label:'监测点1',value:'1'},
+					{label:'监测点2',value:'2'},
+					{label:'监测点3',value:'3'},
+				],
+				columns1: [
+					{
+						title:'隐患点名称',
+						key:'jcca02A011',
+						minWidth:120
+					},
+					{
+						title:'隐患点编号',
+						key:'jcca02A010',
+						minWidth:120
+					},
+					{
+						title:'类型',
+						key:'type',
+						minWidth:80
+					},
+					{
+						title:'地理位置',
+						key:'position',
+						minWidth:200
+					}
+				],
+				columns2: [
+					{
+						title:'隐患点名称',
+						key:'jcca02A011',
+						minWidth:120
+					},
+					{
+						title:'隐患点编号',
+						key:'jcca02A010',
+						minWidth:120
+					},
+					{
+						title:'类型',
+						key:'type',
+						minWidth:80
+					},
+					{
+						title:'地理位置',
+						key:'position',
+						minWidth:200
+					}
+				],
+				columns3: [
+					{
+						title:'隐患点名称',
+						key:'jcca02A011',
+						minWidth:120
+					},
+					{
+						title:'隐患点编号',
+						key:'jcca02A010',
+						minWidth:120
+					},
+					{
+						title:'类型',
+						key:'type',
+						minWidth:80
+					},
+					{
+						title:'地理位置',
+						key:'position',
+						minWidth:200
+					}
+				],
+				dataSource1: [],dataSource2: [],dataSource3: [],
+				loading: true,
+				pageSize: 10,
+				adaptCount1: 0,adaptCount2: 0,adaptCount3: 0,
+				currentPage1: 1,currentPage2: 1,currentPage3: 1,
+				totalPage1: 1,totalPage2: 1,totalPage3: 1
+			}
+		},
+		methods:{
+			timeSelect(a){
+				this.search.val3 = a
+				console.log(this.search.val2)
+			},
+			getData1(){},
+			getData2(){},
+			getData3(){},
+		}
+	}
+</script>
+
+<style lang="less">
+	@font-face{
+		font-family: 'MyFont';
+		src: url('../../assets/font/pangmen.otf');
+		src: url('../../assets/font/pangmen.woff');
+	}
+	.select_list{
+		margin:0 10px;
+		display: inline-block
+	}
+	.btn_select{
+		margin-left:12px;
+		background-color:#f39800!important
+	}
+	.ivu-tabs-bar{
+		border-bottom:0;
+		margin-bottom:0;
+	}
+	.ivu-tabs-content{
+		// background-color: rgba(255,255,255,.04);
+		.ivu-tabs-tabpane{
+			background-color: rgba(255,255,255,.04);
+		}
+	}
+	.ivu-tabs-nav .ivu-tabs-tab{
+		color:rgba(0, 255, 255, 0.6);
+		&:hover{
+			color:#00ffff;
+		}
+		&.ivu-tabs-tab-active{
+			color:#00ffff;
+			background-color: rgba(255,255,255,.04);
+		}
+	}
+	.ivu-tabs-ink-bar{display: none}
+	.ivu-tabs-nav-container{margin-bottom:0;}
+	.panel_box{
+		margin:0 16px;
+		padding-top:18px;
+		.panel_content{
+			margin-top:64px;
+			height:500px;
+			position: relative;
+			.chart_shell{
+				height:420px;
+				margin-right:420px;
+				.chart{
+					height:100%;
+				}
+			}
+			.data_lists{
+				width:300px;
+				position: absolute;
+				right:24px;
+				display: flex;
+				justify-content: space-between;
+				flex-wrap: wrap;
+				font-size: 16px;
+				color:rgba(255,255,255,.3);
+				top:-30px;
+				.list{
+					width:45%;
+					margin:16px 0;
+					.label{
+						margin-bottom: 8px;
+					}
+					.val{	
+						.number{
+							font-size: 20px;
+							font-family: 'MyFont';
+						}
+					}
+					&:first-child{
+						width:100%;
+						.val{
+							.number{
+								font-size: 40px;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+</style>

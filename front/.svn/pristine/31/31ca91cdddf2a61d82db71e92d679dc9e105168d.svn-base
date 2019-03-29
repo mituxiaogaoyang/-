@@ -1,0 +1,31 @@
+/**
+ * @authors remy
+ * @creatTime 2019-03-12 16:39:57
+ * @description 系统角色相关接口
+ * @version 0.0.1
+ */
+
+import { apiRequest } from './index';
+
+export function getData(){
+  return apiRequest({
+    code: 0,
+    data: {
+      dataList: [
+        { id: 1, roleName: '监测数据查询权限', menuIds: '1,12,13,14,15', description: '' },
+        { id: 2, roleName: '系统用户权限', menuIds: '16,17,18,19', description: '' },
+        { id: 3, roleName: '基础信息管理权限', menuIds: '2,3,4,5,6,7,8,9,10,11', description: '' }
+      ],
+      pageNum: 1,
+      totalNum: 1
+    }
+  });
+}
+
+export function save(){
+  return apiRequest({
+    code: 0,
+    data: { id: 3, userName: '王二' },
+    message: '角色新增成功'
+  });
+}

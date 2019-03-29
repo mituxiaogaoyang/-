@@ -1,0 +1,57 @@
+<template>
+  <Modal v-model="visible"
+    class-name="edit-modal"
+    :width="width || 520"
+    :closable="false"
+    :mask-closable="false">
+    <div slot="header">
+      <span>{{title || '标题'}}</span>
+      <Icon type="ios-close" @click="cancel"></Icon>
+    </div>
+    <slot></slot>
+    <div slot="footer">
+      <Button type="primary" @click="cancel">取消</Button>
+      <Button type="primary" @click="sure" :loading="submiting">确定</Button>
+    </div>
+  </Modal>
+</template>
+<script>
+// import { mapState } from 'vuex';
+export default {
+  name: 'edit-modal',
+  props: ['width', 'title', 'submiting'],
+  data(){
+    return {
+    };
+  },
+  computed: {
+    // ...mapState('modal', {
+    //   visible: state => state.editVisible
+    // })
+    visible(){
+      return this.$store.state.modal.editVisible;
+    }
+  },
+  methods: {
+    cancel(){
+      this.$emit('cancel');
+    },
+    sure(){
+      this.$emit('sure');
+    }
+  }
+}
+</script>
+<style lang="less">
+.edit-modal {
+  .ivu-modal-header {
+    font-size: 16px;
+    .ivu-icon-ios-close {
+      float: right;
+      font-size: 24px;
+      margin-top: -4px;
+      cursor: pointer;
+    }
+  }
+}
+</style>

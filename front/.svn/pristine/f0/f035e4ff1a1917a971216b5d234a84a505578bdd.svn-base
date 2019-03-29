@@ -1,0 +1,284 @@
+<template>
+  <div class="header">
+    <span class="appName">地质灾害监测预警系统</span>
+    <div class="right-con">
+      <span class="msgIcon" @click="goToMsgCenter">
+        <span class="unreadIcon" v-if="hasUnreadMsg"></span>
+      </span>
+      <div class="userTools">
+        <div class="userName">
+          <span>{{userName}}</span>
+          <Icon type="ios-arrow-down"></Icon>
+        </div>
+        <ul>
+          <li @click="modifyPwd">修改密码</li>
+          <li @click="confirmExit">退出</li>
+        </ul>
+      </div>
+    </div>
+    <Modal v-model="visible"
+      class-name="edit-modal"
+      width="350"
+      :closable="false"
+      :mask-closable="false">
+      <div slot="header">
+        <span>修改密码</span>
+        <Icon type="ios-close" @click="close"></Icon>
+      </div>
+      <Form ref="form" :model="form" :rules="rules" :label-width="80">
+        <FormItem label="旧密码" prop="password">
+          <Input type="password" v-model="form.password"></Input>
+        </FormItem>
+        <FormItem label="新密码" prop="newPassword">
+          <Input type="password" v-model="form.newPassword"></Input>
+        </FormItem>
+        <FormItem label="确认密码" prop="againPwd">
+          <Input type="password" v-model="form.againPwd"></Input>
+        </FormItem>
+      </Form>
+      <div slot="footer">
+        <Button type="primary" @click="close">取消</Button>
+        <Button type="primary" @click="sure" :loading="submiting">确定</Button>
+      </div>
+    </Modal>
+  </div>
+</template>
+
+<script>
+import { mapState } from 'vuex';
+import * as api from '@/api/user';
+export default {
+  name: 'ori-header',
+  data(){
+    return {
+      userName: sessionStorage.username || '用户',
+      visible: false,
+      submiting: false,
+      form: {
+        password: '',
+        newPassword: '',
+        againPwd: ''
+      },
+      rules: {
+        password: [
+          { required: true, message: '旧密码不能为空', trigger: 'blur' }
+        ],
+        newPassword: [
+          { required: true, validator: (rule, value, callback) => {
+            if(value === ''){
+              callback(new Error('新密码不能为空'));
+            }else if(!(/^[a-zA-Z0-9]{6,16}$/.test(value))){
+              callback(new Error('密码由6到16位字母或字母组成'));
+            }else{
+              callback();
+            }
+          }, trigger: 'blur' }
+        ],
+        againPwd: [
+          { required: true, validator: (rule, value, callback) => {
+            if(value === ''){
+              callback(new Error('请再次输入新密码'));
+            }else if(value !== this.form.newPassword){
+              callback(new Error('两次输入的新密码不一致'));
+            }else{
+              callback();
+            }
+          }, trigger: 'blur' }
+        ]
+      }
+    }
+  },
+  computed: {
+    ...mapState({
+      inputVisible: state => state.inputVisible,
+      hasUnreadMsg: state => state.hasUnreadMsg
+    })
+  },
+  created(){},
+  mounted(){},
+  destroyed(){},
+  methods: {
+    goToMsgCenter(){
+      this.$router.push({path: 'msgCenter'});
+    },
+    modifyPwd(){
+      this.visible = true;
+    },
+    confirmExit(){
+      this.$Modal.confirm({
+        title: '确认',
+        content: '是否确定退出平台？',
+        onOk: this.exit
+      });
+    },
+    exit(){
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('refreshToken');
+      sessionStorage.removeItem('userId');
+      location.href = location.protocol + '//' + location.host + '/login.html';
+    },
+    close(){
+      this.visible = false;
+      this.$refs.form.resetFields();
+      this.submiting = false;
+    },
+    sure(){
+      this.$refs.form.validate(result => {
+        if(result && !this.submiting){
+          this.submiting = true;
+          api.changePwd({id: sessionStorage.userId, ...this.form})
+          .then(res => {
+            this.$Message.success({
+              content: '密码修改成功，请重新登录',
+              onClose: () => {
+                this.exit();
+              }
+            });
+            this.submiting = false;
+          })
+          .catch(res => this.submiting = false);
+        }
+      });
+    }
+  }
+}
+</script>
+
+<style lang="less">
+.header{
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 99;
+  width: 100%;
+  min-width: 1095px;
+  background-image: url(../assets/logo.png);
+  background-repeat: no-repeat;
+  background-size: 170px 48px;
+  background-position: 30px center;
+  background-color: #293445;
+  .appName{
+    margin-left: 240px;
+    font-size: 22px;
+    color: #fff;
+    position: relative;
+    &:before{
+      position: absolute;
+      left: -20px;
+      top: -1px;
+      content: ' ';
+      width: 2px;
+      height: 32px;
+      background-color: #fff;
+    }
+  }
+  .right-con{
+    float: right;
+    margin-right: 30px;
+    .ivu-input-wrapper{
+      .ivu-input-prefix i{
+        font-size: 22px;
+        line-height: 20px;
+        color: #dde4ea;
+      }
+      .ivu-input{
+        height: 20px;
+        padding-top: 0;
+        padding-bottom: 0;
+        border-color: #fff;
+      }
+    }
+    .msgIcon{
+      margin-left: 60px;
+      display: inline-block;
+      width: 32px;
+      vertical-align: top;
+      background-image: url(../assets/header/notice.png);
+      background-size: 18.4px 21.6px;
+      background-repeat: no-repeat;
+      background-position: center;
+      cursor: pointer;
+      position: relative;
+      .unreadIcon{
+        position: absolute;
+        top: 32px;
+        right: 2px;
+        width: 12px;
+        height: 12px;
+        border-radius: 12px;
+        background-color: #293445;
+        &:after{
+          content: ' ';
+          position: absolute;
+          top: 2px;
+          right: 2px;
+          width: 8px;
+          height: 8px;
+          border-radius: 8px;
+          background-color: #ff023e;
+        }
+      }
+    }
+    .userTools{
+      margin-left: 40px;
+      display: inline-block;
+      min-width: 80px;
+      padding-right: 30px;
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+      position: relative;
+      .userName{
+        .ivu-icon{
+          position: absolute;
+          top: 36px;
+          right: 5px;
+          transform: rotate(0deg);
+          transition: transform 0.3s;
+        }
+      }
+      ul{
+        position: absolute;
+        top: 80px;
+        left: -22px;
+        z-index: 3;
+        display: none;
+        width: 124px;
+        list-style: none;
+        background-color: #293445;
+        box-shadow: 0px 0px 14px 0px rgba(255,255,255,.36);
+        &:after{
+          content: ' ';
+          position: absolute;
+          top: -20px;
+          left: 52px;
+          border: 10px solid transparent;
+          border-bottom-color: #293445;
+        }
+      }
+      &:hover{
+        .userName{
+          .ivu-icon{
+            transform: rotate(180deg);
+            transition: transform 0.3s;
+          }
+        }
+        ul{
+          display: block;
+          padding-left: 10px;
+          padding-right: 10px;
+          border-radius: 6px;
+          li{
+            padding-left: 20px;
+            line-height: 44px;
+            cursor: pointer;
+            &:first-child{
+              border-bottom: 1px solid #3b4358;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+</style>

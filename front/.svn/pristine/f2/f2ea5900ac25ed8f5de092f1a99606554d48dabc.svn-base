@@ -1,0 +1,169 @@
+/**
+ * 
+ * @authors remy
+ * @date    2019-03-13 09:57:26
+ * @version 0.0.1
+ */
+html{
+  min-width: 1095px;
+  min-height: 670px;
+}
+
+.autoEllipsis{
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ivu-input, .ivu-select-selection, .ivu-btn{
+  &:hover, &:focus{
+    // border-color: #d8e1eb;
+    box-shadow: none;
+  }
+}
+
+.ivu-input, .ivu-select-selection, .ivu-btn{
+  // border-color: #d8e1eb;
+}
+
+// 针对火狐中样式异常的处理
+.content-box .toolbar .ivu-btn, .ivu-btn-primary {
+  border: 0;
+}
+
+.ivu-select-not-found li{
+  list-style: none;
+}
+
+.ivu-select-item{
+  white-space: nowrap;
+}
+
+// 列表样式
+.content-box{
+  position: relative;
+  padding-top: 56px;
+  height: 100%;
+  .toolbar{
+    position: absolute;
+    top: 0;
+    left: 10px;
+		right:10px;
+    height: 56px;
+    line-height: 56px;
+    .rightBar{
+      float: right;
+    }
+    .ivu-select, .ivu-input-wrapper, .ivu-date-picker{
+      // margin-right: 40px;
+    }
+    .tab{
+      display: inline-block;
+      height: 32px;
+      vertical-align: middle;
+      border: 1px solid #d8e1eb;
+      border-radius: 4px;
+      position: relative;
+      .ivu-btn{
+        vertical-align: top;
+        border-width: 0;
+        border-radius: 0;
+        color: #788697;
+        &.active, &:active{
+          color: #fff;
+          background-color: #38a4ff;
+        }
+        &:first-child{
+          border-top-left-radius: 4px;
+          border-bottom-left-radius: 4px;
+        }
+        &:last-child{
+          border-top-right-radius: 4px;
+          border-bottom-right-radius: 4px;
+        }
+      }
+    }
+  }
+  .toolbar, .toolbar .rightBar{
+    >.ivu-btn{
+      margin-right: 21px;
+      padding-left: 22px;
+      padding-right: 22px;
+      border-radius: 32px;
+      background-color: #2a3245;
+      box-shadow: 0 0 2px rgba(86, 111, 140, .3);
+      color: #fff;
+    }
+  }
+  .table-box{
+    padding-left: 10px;
+    padding-right: 10px;
+    background-color: #fff;
+    box-shadow: 0 6px 6px 0 rgba(0,0,0,0.1);
+    .ivu-table-cell{
+      .ivu-btn{
+        margin-left: 8px;
+        &:first-child{
+          margin-left: 0;
+        }
+      }   
+    }
+    &:not(.notCustom){
+      table{
+				// display: block
+      }
+      .ivu-table-wrapper{
+        border-left: 0;
+        border-color: #d8e1eb;
+        .ivu-table{
+          color: #666;
+          &:before, &:after{
+            display: none;
+          }
+          &.ivu-table-stripe{
+            tr:nth-child(2n) td{
+              background-color: #ebeff3;
+            }
+          }
+          th{
+            height: 56px;
+            color: #909399;
+            background-color: #ebeff3;
+          }
+          th, td{
+            border-color: #d8e1eb;
+          }
+        }
+        .ivu-table-body{
+          &.ivu-table-overflowY, &.ivu-table-overflowX{
+            &:after{
+              content: ' ';
+              position: absolute;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              height: 1px;
+              background-color: #dcdee2;
+            }
+          }
+        }
+        .ivu-spin-fix{
+          border-right: 0;
+          border-color: #d8e1eb;
+        }
+        .ivu-table-tip{
+        }
+      }
+    }
+  }
+  .ivu-page{
+    text-align: right;
+    background-color: #fff;
+    height: 80px;
+    padding-top: 19px;
+    line-height: 60px;
+    .ivu-page-total{
+      vertical-align: middle;
+    }
+  }
+}

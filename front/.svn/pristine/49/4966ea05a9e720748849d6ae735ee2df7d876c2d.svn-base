@@ -1,0 +1,181 @@
+/**
+ * @authors remy
+ * @creatTime 2019-03-18 19:16:59
+ * @description 
+ * @version 0.0.1
+ */
+
+import Vue from 'vue';
+import axios from 'axios';
+import store from '@/store';
+
+// 空实例，用于api中统一处理时的消息提示
+export const vue = new Vue();
+
+export const isDev = process.env.NODE_ENV === 'development';
+
+const token_type = 'bearer';
+
+export const headers = {
+  'Accept': 'application/json',
+  'Content-Type': 'application/json',
+  'Authorization': token_type + ' ' + sessionStorage.token
+};
+
+export const apiContextPath = '/apiPath/'; // http://10.30.0.99:8099/'; // 'http://10.10.254.49:8099/'; // 
+const webSocketPath = 'ws://10.30.0.99:8099/'; // 'ws://10.10.254.49:8099/'; // 
+
+// 异常统一处理函数
+export function exceptionHandler(code, message){
+  if(code === 400){
+    vue.$Message.warning({
+      content: '未登录或登录失效，请重新登录',
+      onClose: () => {
+        sessionStorage.prevUrl = location.href;
+        location.href = location.protocol + '//' + location.host + '/login.html';
+      }
+    });
+  }else{
+    message && vue.$Message.error(message);
+  }
+}
+
+// 刷新token
+function refreshToken(){
+  const options = {
+    headers: {...headers, enabled: true},
+    method: 'get'
+  };
+  options.headers.Authorization = token_type + ' ' + sessionStorage.refreshToken;
+  return new Promise(resolve => {
+    axios.request('/auth/token'.replace(/^\//, apiContextPath), options)
+    .then(res => res.data.data)
+    .then(res => {
+      sessionStorage.token = res.token;
+      sessionStorage.refreshToken = res.refreshToken;
+      headers.Authorization = token_type + ' ' + sessionStorage.token;
+      resolve();
+    })
+    .catch(error => {
+			location.href = location.protocol + '//' + location.host + '/login.html';
+      isDev && console.log('token刷新失败');
+    });
+  });
+}
+
+// 将params参数拼接成field=value&field=value
+export function formatParams(params){
+  let str = '';
+  Object.keys(params).forEach(field => {
+    str += '&' + field + '=' + params[field];
+  });
+  return '?' + str.substr(1);
+}
+
+// api请求函数
+export async function apiRequest({url: url, options: options, isRefreshToken: isRefreshToken}){
+  if(isRefreshToken !== false){
+    await refreshToken();
+  }
+  options.headers = options.headers || headers;
+  return new Promise((resolve, reject) => {
+    var response = (() => {
+      return axios.request(url.replace(/^\//, apiContextPath), options)
+      .then(res => res.data)
+      .then(res => {
+        if(res && res.result === 0){
+          isDev && console.log(url, options.data, res.data);
+          resolve(res.data);
+        }else{
+          isDev && console.log(url, options.data, res);
+          res && exceptionHandler(res.result, res.message);
+          reject();
+        }
+      })
+      .catch(error => {
+        const res = error.response.data;
+        isDev && console.log(url, options.data, res);
+        res && exceptionHandler(res.status, res.message);
+        reject();
+      });
+    })();
+
+    // response
+  });
+}
+
+// Excel导出
+export async function excelExport({url: url, options: options, name: name}){
+  await refreshToken();
+  options.headers = options.headers || headers;
+  return axios.request(url.replace(/^\//, apiContextPath), options)
+  .then(res => res.blob())
+  .then(res => {
+    if(!res) return;
+    isDev && console.log(url, options.data);
+    let link = document.getElementById('excelExportTag');
+    if(link){
+      document.body.removeChild(link);
+    }
+    const href = window.URL.createObjectURL(new Blob([res]));
+    link = document.createElement('a');
+    link.id = 'excelExportTag';
+    link.style.display = 'none';
+    link.href = href;
+    link.setAttribute('download', name);
+    document.body.appendChild(link);
+    link.click();
+  })
+  .catch(error => {
+    isDev && console.log(url, options.data, error);
+  });
+}
+
+
+// WebSocket
+export function startupWebSocket(){
+  if(!WebSocket){
+    apiRequest({
+      url: '/message/findByPage',
+      options: {
+          method: 'post',
+          data: JSON.stringify({
+              read: false,
+              pageNum: 1,
+              pageSize: 1
+          })
+      }
+    }).then(result => {
+      store.commit('unreadToggle', !!result.length);
+    });
+  }else{
+    // 建立WebSocket连接
+    const webSocket = new WebSocket(webSocketPath + 'ws/asset');
+    webSocket.onopen = function(a){
+      isDev && console.log('WebSocket open');
+    }
+    webSocket.onmessage = function(msg){
+      try{
+        const res = JSON.parse(msg.data);
+        isDev && console.log('WebSocket', res);
+        if(res.result === 0){
+          store.commit('unreadToggle', !!res.data);
+        }else if(res.result === 1 && Array.isArray(res.data)){
+          store.commit('home/updateSiteList', res.data);
+        }else if(res.result === 2 && Array.isArray(res.data)){
+          store.commit('home/updateProjectList', res.data);
+        }else{
+          res.message && vue.$Message.error(res.message);
+        }
+      }catch(error){
+        isDev && console.log(msg.data);
+      }
+    }
+    webSocket.onclose = function(a){
+      isDev && console.log('WebSocket close');
+    }
+    webSocket.onerror = function(a){
+      isDev && console.log('WebSocket error');
+    }
+  }
+}

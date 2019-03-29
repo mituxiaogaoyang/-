@@ -1,0 +1,58 @@
+import Vue from 'vue'
+import Router from 'vue-router'
+import Home from './views/home/index.vue'
+
+Vue.use(Router)
+
+export default new Router({
+  routes: [
+    {
+      path: '/',
+      name: 'home',
+      component: Home
+    },
+    {
+      path: '/hideDangerPoint',
+      name: 'hideDangerPoint',
+      component: () => import('./views/hideDangerPoint')
+    },
+    {
+      path: '/monitorPoint',
+      name: 'monitorPoint',
+      component: () => import('./views/monitorPoint')
+    },
+    {
+      path: '/device',
+      name: 'device',
+      component: () => import('./views/device')
+    },
+    {
+      path: '/earlyWarning',
+      name: 'earlyWarning',
+      component: () => import('./views/earlyWarning')
+    },
+    {
+      path: '/role',
+      name: 'role',
+      component: () => import('./views/role')
+    },
+    {
+      path: '/user',
+      name: 'user',
+      component: () => import('./views/user')
+    },
+    {
+      path: '/log',
+      name: 'log',
+      component: () => import('./views/log')
+    },
+    {
+      path: '/msgCenter',
+      name: 'msgCenter',
+      // route level code-splitting
+      // this generates a separate chunk (msgCenter.[hash].js) for this route
+      // which is lazy-loaded when the route is visited.
+      component: () => import(/* webpackChunkName: "msgCenter" */ './views/msgCenter')
+    }
+  ]
+})

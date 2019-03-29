@@ -1,0 +1,196 @@
+<template>
+  <div class="chart shift-chart"></div>
+</template>
+<script>
+import echarts from '@/common/echarts.custom';
+import binary16ToRgba from '@/lib/util/binary16ToRgba';
+import { xAxisData, changeData, speedData } from './demoData';
+export default {
+  name: 'shift-chart',
+  props: ['hasAxisPointer'],
+  data(){
+    return {};
+  },
+  created(){},
+  mounted(){
+    const [ changeColor, speedColor ] = [ '#00ff18', '#fff' ];
+    this.chart = echarts.init(this.$el);
+    const option = {
+      color: [ changeColor, speedColor ],
+      grid: {
+        top: 20,
+        bottom: 35,
+        left: 30,
+        right: 24
+      },
+      tooltip : {
+        trigger: 'axis',
+        confine: true,
+        axisPointer: {
+          type: this.hasAxisPointer === true ? 'cross' : 'none',
+          animation: false,
+          label: {
+            color: 'rgba(255, 255, 255, 0.5)',
+            backgroundColor: '#505765'
+          }
+        },
+        textStyle: {
+          color: 'rgba(255, 255, 255, 0.5)',
+        },
+        formatter: function(params, ticket, callback){
+          const [ data1, data2 ] = params;
+          return `${data1.name}<br />
+            ${data1.marker.replace(data1.color, '#00ff18')}${data1.seriesName}: ${data1.value}<br />
+            ${data2.marker.replace(data2.color, '#fff')}${data2.seriesName}: ${data2.value}`;
+        }
+      },
+      dataZoom: [
+        {
+          show: true,
+          realtime: true,
+          height: 14,
+          bottom: 0,
+          backgroundColor: 'rgba(255, 255, 255, 0.1)',
+          borderColor: 'transparent',
+          dataBackground: {
+            lineStyle: {
+              opacity: 0
+            },
+            areaStyle: {
+              opacity: 0
+            }
+          },
+          fillerColor: 'rgba(255, 255, 255, 0.5)',
+          handleStyle: {
+            color: 'rgba(255, 255, 255, 0.5)'
+          },
+          textStyle: {
+            color: 'rgba(255, 255, 255, 0.5)'
+          },
+          start: 65,
+          end: 85
+        },
+        {
+          type: 'inside',
+          realtime: true,
+          start: 65,
+          end: 85
+        }
+      ],
+      xAxis : [
+        {
+          type : 'category',
+          boundaryGap : false,
+          axisLine: {
+            onZero: false,
+            lineStyle: {
+              color: 'rgba(255, 255, 255, 0.5)'
+            }
+          },
+          axisTick: {
+            show: false
+          },
+          axisLabel: {
+            fontSize: 8,
+            margin: 5
+          },
+          data : xAxisData
+        }
+      ],
+      yAxis: [
+        {
+          name: '变量(mm)',
+          type: 'value',
+          nameGap: 8,
+          nameTextStyle: {
+            color: changeColor,
+            padding: [ 0, 0, 0, 20 ]
+          },
+          axisLine: {
+            lineStyle: {
+              color: 'rgba(255, 255, 255, 0.5)'
+            }
+          },
+          axisTick: {
+            show: false
+          },
+          axisLabel: {
+            fontSize: 8,
+            margin: 5
+          },
+          splitLine: {
+            lineStyle: {
+              color: 'rgba(255, 255, 255, 0.05)'
+            }
+          }
+        },
+        {
+          name: '速率(mm/d)',
+          nameLocation: 'start',
+          type: 'value',
+          nameGap: 8,
+          nameTextStyle: {
+            color: speedColor,
+            padding: [ 0, 30, 0, 0 ]
+          },
+          axisLine: {
+            lineStyle: {
+              color: 'rgba(255, 255, 255, 0.5)'
+            }
+          },
+          axisTick: {
+            show: false
+          },
+          axisLabel: {
+            fontSize: 8,
+            margin: 5
+          },
+          splitLine: {
+            lineStyle: {
+              color: 'rgba(255, 255, 255, 0.05)'
+            }
+          },
+          inverse: true
+        }
+      ],
+      series: [
+        {
+          name:'变量',
+          type:'line',
+          animation: false,
+          symbol: 'none',
+          areaStyle: {
+            color: new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:binary16ToRgba(changeColor)},{offset:1,color:binary16ToRgba(speedColor,0)}])
+          },
+          lineStyle: {
+            color: changeColor,
+            width: 1
+          },
+          data: changeData
+        },
+        {
+          name:'速率',
+          type:'line',
+          yAxisIndex:1,
+          animation: false,
+          symbol: 'none',
+          areaStyle: {
+            color: new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:binary16ToRgba(speedColor,0)},{offset:1,color:binary16ToRgba(speedColor)}])
+          },
+          lineStyle: {
+            color: speedColor,
+            width: 1
+          },
+          data: speedData
+        }
+      ]
+    };
+    this.chart.setOption(option);
+  },
+  methods: {}
+}
+</script>
+<style scoped lang="less">
+.shift-chart{
+}
+</style>

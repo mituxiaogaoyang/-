@@ -1,0 +1,253 @@
+#map-container {
+  .ol-full-screen-false,
+  .ol-full-screen-true {
+    font-family: "Ionicons" !important;
+    font-size: 20px;
+    font-style: normal;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .ol-full-screen-false {
+    &:before {
+      content: "\F1B9";
+    }
+    &:hover:before {
+      color: #0f78ee;
+    }
+  }
+
+  .ol-full-screen-true {
+    &:before {
+      content: "\F1B7";
+    }
+    &:hover:before {
+      color: #0f78ee;
+    }
+  }
+
+  .toolbar-left-top {
+    position: absolute;
+    left: 20px;
+    top: 20px;
+    z-index: 1;
+    color: #333;
+    .searchBox {
+      width: 200px;
+      height: 42px;
+      line-height: 42px;
+      font-size: 12px;
+      background-color: #fff;
+      vertical-align: top;
+      .searchInput {
+        position: relative;
+        input {
+          border: none;
+          width: 170px;
+          padding: 0 10px;
+          height: 42px;
+          vertical-align: top;
+          &:focus {
+            outline: none;
+          }
+        }
+      }
+    }
+  }
+
+  .toolbar-right-top {
+    position: absolute;
+    right: 72px;
+    top: 20px;
+    font-size: 12px;
+    height: 42px;
+    line-height: 30px;
+    >div {
+      float: left;
+      background-color: #fff;
+      color: #454a51;
+      font-size: 12px;
+      padding: 6px 16px 6px 40px;
+      cursor: default;
+      position: relative;
+      &:after {
+        position: absolute;
+        right: 0;
+        top: 13px;
+        width: 1px;
+        height: 16px;
+        content: '';
+        background-color: #eee;
+      }
+      &.selector:after {
+        display: none;
+      }
+      &:first-child {
+        margin-left: 0;
+      }
+      &.mapSource {
+        padding-right: 35px;
+        position: relative;
+        i.ivu-icon {
+          position: absolute;
+          right: 11px;
+          top: 12px;
+          transform: rotate(90deg);
+          font-size: 16px;
+        }
+        &.opened {
+          i.ivu-icon {
+            transform: rotate(270deg);
+            transition: transform .3s;
+          }
+        }
+        &.closed {
+          i.ivu-icon {
+            transform: rotate(90deg);
+            transition: transform .3s;
+          }
+        }
+      }
+      &:before {
+        position: absolute;
+        left: 16px;
+        top: 12px;
+        width: 16px;
+        height: 16px;
+        content: '';
+      }
+      &.mapSource:before {
+        // background-image: url('../../assets/map/map_control_map.png');
+      }
+      &:hover {
+        color: #0f78ee;
+      }
+      &.mapSource:hover:before {
+        // background-image: url('../../assets/map/map_control_map_active.png');
+      }
+    }
+    .selector {
+      box-sizing: border-box;
+      position: relative;
+      .options {
+        display: none;
+        position: absolute;
+        left: 0;
+        top: 42px;
+        width: 100%;
+        >div {
+          background-color: #fff;
+          color: #454a51;
+          padding: 6px 6px 6px 40px;
+          cursor: default;
+          position: relative;
+          &:before {
+            position: absolute;
+            left: 16px;
+            top: 12px;
+            width: 16px;
+            height: 16px;
+            content: '';
+          }
+          &.baidu:before {
+            // background-image: url('../../assets/map/map_control_map_baidu.png');
+          }
+          &.gaode:before {
+            // background-image: url('../../assets/map/map_control_map_auto_navi.png');
+          }
+          &.google:before {
+            // background-image: url('../../assets/map/map_control_map_google.png');
+          }
+          &.googleSatellite:before {
+            // background-image: url('../../assets/map/map_control_map_satellite.png');
+          }
+          &:hover {
+            color: #0f78ee;
+          }
+        }
+      }
+      &.opened {
+        .options {
+          display: block;
+        }
+      }
+      &:last-child {
+        margin-left: 10px;
+      }
+    }
+  }
+
+  .toolbar-right-bottom {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+    font-size: 18px;
+    .goHome {
+      width: 26px;
+      height: 26px;
+      background-color: #fff;
+      line-height: 26px;
+      text-align: center;
+      &:hover {
+        color: #0f78ee;
+      }
+    }
+  }
+
+  .ol-viewport {
+    .hidden {
+      display: none;
+    }
+    .ol-mouse-position {
+      bottom: 20px;
+      left: 20px;
+      top: inherit;
+      right: inherit;
+      width: 220px;
+      text-align: center;
+      background-color: #fff;
+      line-height: 26px;
+      font-size: 12px;
+    }
+    .ol-zoom {
+      right: .5em;
+      bottom: 3em;
+      top: inherit;
+      left: inherit;
+    }
+    .ol-overlay-container {
+      .menu {
+        font-size: 14px;
+        width: auto;
+        text-align: left;
+        .menuItem {
+          padding: 10px 20px;
+        }
+        .menuItem:hover {
+          color: #0f78ee;
+          cursor: pointer;
+        }
+      }
+    }
+    .ol-overlaycontainer-stopevent {
+      >div {
+        >button {
+          width: 42px;
+          height: 42px;
+          margin: 0;
+          background-color: #fff;
+          color: #454a51;
+          font-weight: normal;
+          &:focus {
+            outline: 0;
+          }
+        }
+        &.ol-full-screen {
+          top: 20px;
+          right: 20px;
+          padding: 0;
+        }
+      }
+    }
+  }
+}

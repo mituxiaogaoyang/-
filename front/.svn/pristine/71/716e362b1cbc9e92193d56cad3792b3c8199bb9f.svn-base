@@ -1,0 +1,96 @@
+<template>
+  <div class="content-box">
+    <div class="toolbar">
+      <div class="rightBar">
+        <Button type="primary" @click="add">新增</Button>
+      </div>
+    </div>
+    <ori-table :columns= "columns" :dataSource="dataSource" :loading="loading" :adaptCount="adaptCount"
+      :currentPage="currentPage" :totalPage="totalPage" :getData="getData"></ori-table>
+    <Edit :title="editTitle"></Edit>
+  </div>
+</template>
+<script>
+import * as api from '@/api/role';
+import OriTable from '@/components/OriTable';
+import Edit from './edit';
+export default {
+  components: {
+    OriTable,
+    Edit
+  },
+  data(){
+    return {
+      columns: [
+        {
+          title: '权限名称',
+          key: 'roleName'
+        },
+        {
+          title: '权限描述',
+          key: 'description'
+        },
+        {
+          title: '操作',
+          key: 'id',
+          render: (h, param) => {
+            return [
+              h('Button', {
+                props: {
+                  size: 'small'
+                },
+                on: {
+                  click: () => {
+                    this.modify(param.row);
+                  }
+                }
+              }, '修改')
+            ];
+          }
+        }
+      ],
+      dataSource: [],
+      loading: true,
+      adaptCount: 0,
+      currentPage: 1,
+      totalPage: 1,
+      pageSize: 10,
+      editTitle: ''
+    };
+  },
+  created(){
+    this.getData();
+  },
+  mounted(){
+  },
+  destroyed(){
+  },
+  methods: {
+    getData(pageNum){
+      this.loading = true
+      api.getData({pageNum: pageNum || 1, pageSize: this.pageSize})
+      .then(result => {
+          this.dataSource = result.dataList;
+          this.currentPage = result.pageNum;
+          this.totalPage = result.totalNum;
+          this.loading = false;
+          this.adaptCount++;
+      });
+    },
+    openEdit(){
+      this.$store.commit('modal/openEdit');
+    },
+    add(){
+      this.editTitle = '新增';
+      this.openEdit();
+    },
+    modify(rowData){
+      this.editTitle = '修改';
+      this.openEdit();
+    }
+  }
+}
+</script>
+<style scoped lang="less">
+.role-mg{}
+</style>

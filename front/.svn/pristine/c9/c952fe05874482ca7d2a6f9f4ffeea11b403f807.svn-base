@@ -1,0 +1,103 @@
+<template>
+	<div id="warningManual">
+		<ul class="lists_warning">
+			<li class="list">
+				<label for="range">预警名称</label>
+				<Input v-model="form.jcca20A906" placeholder="" element-id="range" />
+			</li>
+			<li class="list">
+				<span class="label">预警等级</span>
+				<Select v-model="form.jcca20A030" >
+					<Option v-for="item in degrees" :value="item.value" :key="item.value">{{ item.label }}</Option>
+				</Select>
+			</li>
+			<li class="list">
+				<span class="label">所属隐患点</span>
+				<Select v-model="form.jcca20A055" >
+					<Option v-for="item in pointsHide" :value="item.value" :key="item.value">{{ item.label }}</Option>
+				</Select>
+			</li>
+			<li class="list">
+				<label for="range">接收对象(短信)</label>
+				<Input v-model="form.jcca20A905" type="textarea" :rows="3" placeholder="请输入手机号码,多个号码用逗号隔开..." />
+			</li>
+			<li class="list">
+				<span class="label">预警内容</span>
+				<Input v-model="form.jcca20A903" type="textarea" :rows="4" placeholder="" />
+			</li>
+			<li class="btns list">
+				<Button type="primary" class="btn_submit" @click="submit">提交</Button>
+			</li>
+		</ul>
+		
+	</div>
+</template>
+
+<script>
+	import * as api from '@/api/warningSet';
+	export default {
+		data(){
+			return{
+				form:{
+					jcca20A906:'',
+					jcca20A030:'',
+					jcca20A055:'',
+					jcca20A905:'',
+					jcca20A903:''
+				},
+				pointsHide:[
+					
+				],
+				degrees:[
+					{label:'注意级',value:1},
+					{label:'警示级',value:2},
+					{label:'警戒级',value:3},
+					{label:'警报级',value:4}
+				]
+			}
+		},
+		mounted(){
+			
+		},
+		methods:{
+			submit(){ 
+				this.$Modal.confirm({
+					title: '',
+					content: '<p>确认要发布此预警吗？</p>',
+					center:true,
+					onOk: () => {
+						api.addWarning(this.form).then(res=>{
+							this.$Message.info('此预警已发布')
+							for(let i in this.form){
+								this.form[i] = ''
+							}
+						});
+					}
+				});
+			}
+		}
+	}
+	 
+</script>
+
+<style lang="less">
+	#warningManual{
+		.lists_warning{
+			margin:0 20px;
+			width:500px;
+			.list{
+				margin:21px 0;
+				label,.label{
+					margin-bottom: 3px;
+					display: block
+				}
+			}
+			.btn_submit{
+				width:100px;
+				margin:48px auto;
+				display: block;
+			}
+		}
+		
+	}
+</style>

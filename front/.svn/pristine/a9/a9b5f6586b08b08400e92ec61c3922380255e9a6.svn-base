@@ -1,0 +1,117 @@
+import Vue from 'vue'
+import Router from 'vue-router'
+
+import store from './store'
+import Home from './views'
+import { traversalTree } from '@/lib/util/traversal'
+
+Vue.use(Router)
+
+const router = new Router({
+  routes: [
+    {
+      path: '/',
+			redirect:'/hideDangerPoint'
+    },
+    {
+      path: '/hideDangerPoint',
+      name: 'hideDangerPoint',
+      component: () => import('./views/hideDangerPoint')
+    },
+    {
+      path: '/monitorPoint',
+      name: 'monitorPoint',
+      component: () => import('./views/monitorPoint')
+    },
+    {
+      path: '/device',
+      name: 'device',
+      component: () => import('./views/device')
+    },
+		{
+		  path: '/mapLabel',
+		  name: 'mapLabel',
+		  component: () => import('./views/mapIcon')
+		},
+		{
+		  path: '/dataAnalysis',
+		  name: 'dataAnalysis',
+		  component: () => import('./views/dataAnalysis')
+		},
+		{
+		  path: '/dataQuery',
+		  name: 'dataQuery',
+		  component: () => import('./views/dataQuery')
+		},
+    {
+      path: '/earlyWarning',
+      name: 'earlyWarning',
+      component: () => import('./views/earlyWarning')
+    },
+		{
+		  path: '/warningSet',
+		  name: 'warningSet',
+		  component: () => import('./views/warningSet')
+		},
+		{
+		  path: '/warningManual',
+		  name: 'warningManual',
+		  component: () => import('./views/warningManual')
+		},
+		{
+		  path: '/heros',
+		  name: 'heros',
+		  component: () => import('./views/hero')
+		},
+		{
+		  path: '/storage',
+		  name: 'storage',
+		  component: () => import('./views/storage')
+		},
+    {
+      path: '/role',
+      name: 'role',
+      component: () => import('./views/role')
+    },
+    {
+      path: '/user',
+      name: 'user',
+      component: () => import('./views/user')
+    },
+    {
+      path: '/log',
+      name: 'log',
+      component: () => import('./views/log')
+    },
+    {
+      path: '/msgCenter',
+      name: 'msgCenter',
+      // route level code-splitting
+      // this generates a separate chunk (msgCenter.[hash].js) for this route
+      // which is lazy-loaded when the route is visited.
+      component: () => import(/* webpackChunkName: "msgCenter" */ './views/msgCenter')
+    }
+  ]
+})
+
+// 全局导航守卫
+const isLogin = sessionStorage.token && sessionStorage.refreshToken && sessionStorage.userId;
+router.beforeEach((to, from, next) => {
+  const menuData = store.state.menuData;
+  let isCan = false; // 是否有权限访问
+  traversalTree(menuData, item => {
+    if(to.path === '/msgCenter' || (item.menuPath && item.menuPath === to.path)){
+      isCan = true;
+    }
+  });
+  if (!isLogin) {
+    window.location.href = window.location.protocol + '//' + window.location.host + '/login';
+  } else if (isCan) {
+    next(); // 正常跳转
+  } else {
+    // 必须有next()否则路由异常：前进后退时路由无响应（原因：缺少next，导致history.setupListeners未执行）
+    next({path: '/'}); // 跳转至空白页
+  }
+});
+
+export default router

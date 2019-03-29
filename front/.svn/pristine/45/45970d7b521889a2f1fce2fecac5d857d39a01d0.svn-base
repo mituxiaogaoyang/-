@@ -1,0 +1,67 @@
+<template>
+  <div id="app">
+    <Spin size="large" fix v-if="visible"></Spin>
+    <ori-header></ori-header>
+    <ori-menu class="menu"></ori-menu>
+    <div class="content">
+      <router-view/>
+    </div>
+  </div>
+</template>
+<script>
+import OriHeader from '@/components/OriHeader';
+import OriMenu from '@/components/OriMenu';
+export default {
+  components: {
+    OriHeader,
+    OriMenu
+  },
+  data(){
+    return {};
+  },
+  computed: {
+    visible(){
+      return !this.$store.state.menuData.length;
+    }
+  },
+  beforeCreate(){
+    this.$store.dispatch('getMenu');
+  }
+}
+</script>
+<style lang="less">
+@header-height: 80px;
+@menu-width: 220px;
+#app {
+  font-size: 14px;
+  &>.ivu-spin-fix {
+    z-index: 999999;
+    background-color: #fff;
+  }
+  &>.header {
+    height: @header-height;
+    line-height: @header-height;
+    .right-con {
+      .msgIcon {
+        height: @header-height;
+      }
+    }
+  }
+  &>.menu {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    top: @header-height;
+    width: @menu-width;
+    user-select: none;
+  }
+  &>.content {
+    position: absolute;
+    left: @menu-width;
+    top: @header-height;
+    right: 0;
+    bottom: 0;
+    background-color: #fff;
+  }
+}
+</style>

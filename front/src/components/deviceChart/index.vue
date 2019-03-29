@@ -1,0 +1,187 @@
+<template>
+  <div class="chart device-chart"></div>
+</template>
+<script>
+import echarts from '@/common/echarts.custom';
+import { getDomWidth, getDomHeight } from '@/lib/util/dom';
+export default {
+  name: 'device-chart',
+  props: {
+    options: {
+      type: Object,
+      default: () => {}
+    },
+    dataSource: {
+      type: Object,
+      default: () => {}
+    }
+  },
+  data(){
+    return {
+      opts: {}
+    };
+  },
+  watch: {
+    dataSource(newVal, oldVal){
+      if(newVal && newVal.xAxisData && newVal.xAxisData.length){
+        this.update(newVal.xAxisData, newVal.normalData, newVal.abnormalData);
+      }
+    }
+  },
+  created(){
+    this.opts = Object.assign({}, this.options || {});
+  },
+  mounted(){
+    this.init();
+    const xAxisData = ['GNSS位移站', '拉线位移计', '雨量计'],
+      normalData = [0, 0, 0],
+      abnormalData = [0, 0, 0];
+    this.update(xAxisData, normalData, abnormalData);
+
+    window.addEventListener('resize', () => {
+      this.chart && this.chart.resize(getDomWidth(this.$el), getDomHeight(this.$el));
+    });
+  },
+  methods: {
+    init(){
+      this.chart = echarts.init(this.$el);
+      const [ normalColor, abnormalColor ] = [ '#8bf80f', '#ffbd01' ];
+      const option = {
+        color: [ normalColor, abnormalColor ],
+        grid: {
+          top: 20,
+          bottom: 28,
+          left: 30,
+          right: 24
+        },
+        legend: {
+          right: 10,
+          top: -5,
+          itemWidth: 8,
+          itemHeight: 8,
+          itemGap: 5,
+          textStyle: {
+            color: '#fff'
+          },
+          data:[
+            { name: '正常', icon: 'rect' },
+            { name: '异常', icon: 'rect' }
+          ]
+        },
+        tooltip : {
+          show: false,
+          trigger: 'axis',
+          confine: true,
+          axisPointer: {
+            type: 'none',
+            animation: false,
+            label: {
+              color: 'rgba(255, 255, 255, 0.5)',
+              backgroundColor: '#505765'
+            }
+          },
+          textStyle: {
+            color: 'rgba(255, 255, 255, 0.5)',
+          }
+        },
+        xAxis: [
+          {
+            type: 'category',
+            axisLine: {
+              show: false
+            },
+            axisTick: {
+              show: false
+            },
+            axisLabel: {
+              interval: 0, // 强制显示所有刻度标签
+              textStyle: {
+                color: '#00C3C3'
+              }
+            },
+            data: []
+          }
+        ],
+        yAxis: [
+          {
+            name: '',
+            type: 'value',
+            nameGap: 8,
+            nameTextStyle: {
+              color: 'transparent'
+            },
+            axisLine: {
+              show: false
+            },
+            axisTick: {
+              show: false
+            },
+            axisLabel: {
+              show: false
+            },
+            splitLine: {
+              show: false
+            }
+          }
+        ],
+        series: [
+          {
+            name:'正常',
+            type:'bar',
+            animation: false,
+            symbol: 'none',
+            barWidth: '20%',
+            label: {
+              normal: {
+                show: true,
+                color: 'rgba(255, 255, 255, 0.5)',
+                position: 'top'
+              }
+            },
+            areaStyle: {
+              color: normalColor
+            },
+            data: []
+          },
+          {
+            name:'异常',
+            type:'bar',
+            animation: false,
+            symbol: 'none',
+            barWidth: '20%',
+            label: {
+              normal: {
+                show: true,
+                color: 'rgba(255, 255, 255, 0.5)',
+                position: 'top'
+              }
+            },
+            areaStyle: {
+              color: abnormalColor
+            },
+            data: []
+          }
+        ]
+      };
+      this.chart.setOption(option);
+    },
+    update(xAxisData, normalData, abnormalData){
+      this.chart.setOption({
+        xAxis: {
+          data: xAxisData
+        },
+        series: [
+          {
+            data: normalData
+          },
+          {
+            data: abnormalData
+          }
+        ]
+      });
+    }
+  }
+}
+</script>
+<style scoped lang="less">
+</style>

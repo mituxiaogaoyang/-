@@ -1,0 +1,184 @@
+<template>
+  <div class="content-box">
+    <div class="toolbar">
+      <Input type="text" v-model="searchText" search @on-search="getData" style="width:200px" placeholder="按用户名搜索"></Input>
+      <div class="rightBar">
+        <Button type="primary" @click="add">新增</Button>
+      </div>
+    </div>
+    <ori-table :columns= "columns" :dataSource="dataSource" :loading="loading" :adaptCount="adaptCount"
+      :currentPage="currentPage" :totalPage="totalPage" :getData="getData"></ori-table>
+    <Edit :title="editTitle" :refreshTable="getData" :id="editId"></Edit>
+  </div>
+</template>
+<script>
+import * as api from '@/api/user';
+import OriTable from '@/components/OriTable';
+import Edit from './edit';
+import { formatEnabled } from '@/common/format';
+export default {
+  components: {
+    OriTable,
+    Edit
+  },
+  data(){
+    return {
+      columns: [
+        {
+          title: '序号',
+          type: 'index',
+          width: 60
+        },
+        {
+          title: '用户名',
+          key: 'userNick'
+        },
+        {
+          title: '登录账户',
+          key: 'userName'
+        },
+        {
+          title: '联系电话',
+          key: 'phone'
+        },
+        {
+          title: '状态',
+          key: 'enabled',
+          render: (h, param) => {
+            return h('span', formatEnabled(param.row.enabled));
+          }
+        },
+        {
+          title: '操作',
+          key: 'id',
+          width: 320,
+          render: (h, param) => {
+            return [
+              h('Button', {
+                props: {
+                  size: 'small'
+                },
+                on: {
+                  click: () => {
+                    this.modify(param.row);
+                  }
+                }
+              }, '编辑'),
+              h('Button', {
+                props: {
+                  size: 'small'
+                },
+                on: {
+                  click: () => {
+                    this.enabled(param.row);
+                  }
+                }
+              }, formatEnabled(!param.row.enabled)),
+              h('Button', {
+                props: {
+                  size: 'small'
+                },
+                on: {
+                  click: () => {
+                    this.resetPwd(param.row);
+                  }
+                }
+              }, '重置密码'),
+              h('Button', {
+                props: {
+                  size: 'small'
+                },
+                on: {
+                  click: () => {
+                    this.del(param.row);
+                  }
+                }
+              }, '删除')
+            ];
+          }
+        }
+      ],
+      searchText: '',
+      dataSource: [],
+      loading: true,
+      adaptCount: 0,
+      currentPage: 1,
+      totalPage: 1,
+      pageSize: 10,
+      editTitle: '',
+      editId: ''
+    };
+  },
+  created(){
+    this.getData();
+  },
+  mounted(){
+  },
+  destroyed(){
+  },
+  methods: {
+    getData(pageNum){
+      this.loading = true
+      api.getData({
+        con: this.searchText,
+        pageNum: /^[0-9]+$/.test(pageNum) ? pageNum : 1,
+        pageSize: this.pageSize
+      }).then(result => {
+        this.dataSource = result.dataList;
+        this.currentPage = result.pageNum;
+        this.totalPage = result.totalNum;
+        this.loading = false;
+        this.adaptCount++;
+      });
+    },
+    openEdit(){
+      this.$store.commit('modal/openEdit');
+    },
+    add(){
+      this.editTitle = '新增';
+      this.editId = '';
+      this.openEdit();
+    },
+    modify(rowData){
+      this.editTitle = '编辑';
+      this.editId = rowData.id;
+      this.openEdit();
+    },
+    enabled(rowData){
+      api.enabled({
+        userId: rowData.id,
+        enabled: !rowData.enabled
+      }).then(result => {
+        this.$Message.success('用户'+ (!rowData.enabled ? '启用' : '停用') +'成功！');
+        this.getData();
+      });
+    },
+    resetPwd(rowData){
+      this.$Modal.confirm({
+        title: '确认',
+        content: '确认重置用户 “'+ rowData.userNick +'” 的登录密码吗？',
+        onOk: () => {
+          return this.$Message('等待接口resetPwd');
+          api.resetPwd(rowData.id).then(result => {
+            this.$Message.success('用户密码重置成功！');
+          });
+        }
+      });
+    },
+    del(rowData){
+      this.$Modal.confirm({
+        title: '确认',
+        content: '确认删除用户 “'+ rowData.userNick +'” 吗？',
+        onOk: () => {
+          api.del(rowData.id).then(result => {
+            this.$Message.success('用户删除成功！');
+            this.getData();
+          });
+        }
+      });
+    }
+  }
+}
+</script>
+<style scoped lang="less">
+</style>

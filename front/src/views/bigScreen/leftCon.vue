@@ -1,0 +1,276 @@
+<template>
+  <div class="left-con">
+    <Icon type="md-rewind" :class="leftConVisible ? 'left' : 'right'" @click="leftConVisible=!leftConVisible" />
+    <div :class="leftConVisible ? 'opened' : 'closed'">
+      <div class="deviceStatus">
+        <div class="slider">
+          <div class="item">
+            <div class="title">
+              <span>设备运行状态统计</span>
+            </div>
+            <device-chart :dataSource="deviceChartData"></device-chart>
+          </div>
+        </div>
+      </div>
+      <div class="shift">
+        <div>
+          <div class="slider slider1_shift" :data-num="shiftChartArr.length" :style="{width:shiftChartArr.length*17.7+'rem'}">
+            <div class="item" v-for="(item, index) in shiftChartArr" :key="index">
+              <a :href="'/#/dataAnalysis?type=shift&id='+item.id">
+                <div class="title">
+                  <span>{{item.name}}</span>
+                  <Icon type="ios-arrow-forward" />
+                  <Icon type="ios-arrow-forward" />
+                </div>
+              </a>
+              <shift-chart :dataSource="item.data"></shift-chart>
+            </div>
+          </div>
+          <div class="slider slider2_shift" :data-num="shiftChartArr.length" :style="{width:shiftChartArr.length*17.7+'rem'}">
+            <div class="item" v-for="(item, index) in shiftChartArr" :key="index">
+              <a :href="'/#/dataAnalysis?type=shift&id='+item.id">
+                <div class="title">
+                  <span>{{item.name}}</span>
+                  <Icon type="ios-arrow-forward" />
+                  <Icon type="ios-arrow-forward" />
+                </div>
+              </a>
+              <shift-chart :dataSource="item.data"></shift-chart>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="gnss">
+        <div>
+          <div class="slider slider1_gnss" :data-num="gnssChartArr.length" :style="{width:gnssChartArr.length*17.7+'rem'}">
+            <div class="item" v-for="(item, index) in gnssChartArr" :key="index">
+              <a :href="'/#/dataAnalysis?type=gnss&id='+item.id">
+                <div class="title">
+                  <span>{{item.name}}</span>
+                  <Icon type="ios-arrow-forward" />
+                  <Icon type="ios-arrow-forward" />
+                </div>
+              </a>
+              <gnss-chart :dataSource="item.data"></gnss-chart>
+            </div>
+          </div>
+          <div class="slider slider2_gnss" :data-num="gnssChartArr.length" :style="{width:gnssChartArr.length*17.7+'rem'}">
+            <div class="item" v-for="(item, index) in gnssChartArr" :key="index">
+              <a :href="'/#/dataAnalysis?type=gnss&id='+item.id">
+                <div class="title">
+                  <span>{{item.name}}</span>
+                  <Icon type="ios-arrow-forward" />
+                  <Icon type="ios-arrow-forward" />
+                </div>
+              </a>
+              <gnss-chart :dataSource="item.data"></gnss-chart>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="rainfall">
+        <div>
+          <div class="slider slider1_rainfall" :data-num="rainfallChartArr.length" :style="{width:rainfallChartArr.length*17.7+'rem'}">
+            <div class="item" v-for="(item, index) in rainfallChartArr" :key="index">
+              <a :href="'/#/dataAnalysis?type=rainfall&id='+item.id">
+                <div class="title">
+                  <span>{{item.name}}</span>
+                  <Icon type="ios-arrow-forward" />
+                  <Icon type="ios-arrow-forward" />
+                </div>
+              </a>
+              <rainfall-chart :dataSource="item.data"></rainfall-chart>
+            </div>
+          </div>
+          <div class="slider slider2_rainfall" :data-num="rainfallChartArr.length" :style="{width:rainfallChartArr.length*17.7+'rem'}">
+            <div class="item" v-for="(item, index) in rainfallChartArr" :key="index">
+              <a :href="'/#/dataAnalysis?type=rainfall&id='+item.id">
+                <div class="title">
+                  <span>{{item.name}}</span>
+                  <Icon type="ios-arrow-forward" />
+                  <Icon type="ios-arrow-forward" />
+                </div>
+              </a>
+              <rainfall-chart :dataSource="item.data"></rainfall-chart>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+<script>
+import DeviceChart from '@/components/deviceChart';
+import ShiftChart from '@/components/shiftChart';
+import GnssChart from '@/components/gnssChart';
+import RainfallChart from '@/components/rainfallChart';
+import Roll from '@/lib/roll';
+export default {
+  name: 'left-con',
+  components: {
+    DeviceChart,
+    ShiftChart,
+    GnssChart,
+    RainfallChart
+  },
+  props: {
+    deviceData: {
+      type: Array,
+      default: () => []
+    },
+    shiftChartArr: {
+      type: Array,
+      default: () => []
+    },
+    gnssChartArr: {
+      type: Array,
+      default: () => []
+    },
+    rainfallChartArr: {
+      type: Array,
+      default: () => []
+    }
+  },
+  data(){
+    return {
+      leftConVisible: true,
+      deviceChartData: {}
+    };
+  },
+  watch: {
+    deviceData(newVal, oldCal){
+      if(newVal && newVal.length){
+        const gnssItem = newVal.find(item => item.type === '3'),
+          rainfallItem = newVal.find(item => item.type === '1'),
+          shiftItem = newVal.find(item => item.type === '2');
+        this.deviceChartData = {
+          xAxisData: [shiftItem.typeName, rainfallItem.typeName, gnssItem.typeName],
+          normalData: [shiftItem.enabledNum, rainfallItem.enabledNum, gnssItem.enabledNum],
+          abnormalData: [shiftItem.disabledNum, rainfallItem.disabledNum, gnssItem.disabledNum]
+        };
+      }
+    },
+    shiftChartArr(newVal, oldCal){
+      newVal && newVal.length && this.$nextTick(() => { this.startupSlider('shift') });
+    },
+    gnssChartArr(newVal, oldCal){
+      newVal && newVal.length && this.$nextTick(() => { this.startupSlider('gnss') });
+    },
+    rainfallChartArr(newVal, oldCal){
+      newVal && newVal.length && this.$nextTick(() => { this.startupSlider('rainfall') });
+    }
+  },
+  mounted(){
+  },
+  methods: {
+    startupSlider(type){
+      // 方案二缺点两份图表占用资源
+      const _sliders1 = this.$el.querySelectorAll('.slider1_' + type),
+        _sliders2 = this.$el.querySelectorAll('.slider2_' + type);
+      _sliders1.forEach((slider, i) => {
+        const num = slider.getAttribute('data-num');
+        const roll = new Roll(slider, {
+          cloneElem: _sliders2[i],
+          direction: 'left',
+          totalPageNum: num,
+          pageWidth: 17.7,
+          pageHeight: 9.4,
+          unit: 'rem',
+          rate: 6
+        });
+        roll.start();
+      });
+      // return;
+      // 方案一缺点从尾部到头部的动画不平滑
+      // const sliders = this.$el.querySelectorAll('.slider'),
+      //   rollRate = 6,
+      //   duration = 1;
+      // function step(dom, i, num){
+      //   setTimeout(() => {
+      //     dom.style.transform = `translate3d(${i * -17.7}rem, 0, 0)`;
+      //     dom.style.transition = `transform ${duration}s ease 0s`;
+      //     if(i + 1 == num){
+      //       i = 0;
+      //     }else{
+      //       i++;
+      //     }
+      //     step(dom, i, num);
+      //   }, rollRate * 1000);
+      // }
+      // sliders.forEach(slider => {
+      //   const num = slider.getAttribute('data-num');
+      //   num > 1 && step(slider, 1, num);
+      // });
+    }
+  }
+}
+</script>
+<style lang="less">
+.left-con{
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  z-index: 999999;
+  margin-top: -20.6rem;
+  .ivu-icon-md-rewind{
+    left: -1rem;
+  }
+  >div{
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 18.3rem;
+    height: 41.2rem;
+    &.closed{
+      left: -20rem;
+      transition: left 1s ease 0s;
+    }
+    &.opened{
+      left: 0;
+      transition: left 1s ease 0s;
+    }
+    >div{
+      height: 10rem;
+      padding: 0.3rem;
+      margin-top: 0.4rem;
+      border-radius: 0.3rem;
+      background-color: rgba(2, 17, 17, 0.5);
+      >div{
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+      .slider{
+        height: 100%;
+        &.started{
+          transform: translate3d(-17.7rem, 0, 0);
+          transition: transform 1s ease 5s;
+        }
+        .item{
+          float: left;
+          width: 17.7rem;
+          height: 9.4rem;
+          padding-top: 1.8rem;
+          position: relative;
+          .title{
+            position: absolute;
+            left: 0.5rem;
+            top: 0.5rem;
+            font-size: 0.8rem;
+            color: #0ff;
+            >:last-child.ivu-icon{
+              margin-left: -9px;
+            }
+          }
+          .chart{
+            height: 7.6rem;
+          }
+        }
+      }
+    }
+  }
+  .deviceStatus{
+    margin-top: 0;
+  }
+}
+</style>

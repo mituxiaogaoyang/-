@@ -1,0 +1,281 @@
+<template>
+	<div class="content_hide_points">
+		<div class="bar_tree">
+			<menu-tree></menu-tree>
+		</div>
+		<div class="content-box">
+		  <div class="toolbar">
+				<Button type="primary" @click="add" class="btn_add">新增</Button>
+				<Button type="primary" @click="leadIn">导入</Button>
+				<Button type="primary" @click="leadOut">导出</Button>
+				<div class="rightBar">
+					<Input search  @search="search"/>
+				</div>
+		  </div>
+		  <ori-table :columns= "columns" :dataSource="dataSource" :loading="loading" :adaptCount="adaptCount"
+		    :currentPage="currentPage" :totalPage="totalPage" :getData="getData"></ori-table>
+		</div>
+		<edit-modal :title="methodDeal+'隐患点'" :submiting="isSubmit">
+			<div class="form_main">
+				<div class="title first">基本信息</div>
+				<ul class="input_box">
+					<li v-for='obj in form.inputLists' :key='obj.idFor'>
+						<label :for="obj.idFor">{{obj.label}}</label>
+						<Input v-model="obj.v" placeholder="" :element-id="obj.idFor" size="small"/>
+					</li>
+				</ul>
+				<div class="label">类型</div>
+				<RadioGroup v-model="form.type">
+					  <Radio :label="list.id" v-for='list in form.types' :key='list.id'>{{list.value}}</Radio>
+			  </RadioGroup>
+				<div class="label">威胁对象</div>
+				<CheckboxGroup v-model="form.objPoints">
+						<Checkbox :label="list.id" v-for='list in form.objAll' :key="list.id">{{list.value}}</Checkbox>
+				</CheckboxGroup>
+				<div class="title">规模</div>
+				<ul class="scale">
+					<li v-for='obj in form.scale' :key='obj.idFor'>
+						<label :for="obj.idFor">{{obj.label}}</label>
+						<Input v-model="obj.v" placeholder="" :id="obj.idFor" size="small"/>
+					</li>
+					<li></li>
+				</ul>
+				<div class="title">其他</div>
+				<Input v-model="form.text" type="textarea" :rows="2" placeholder="Enter something..." />
+			</div>
+		</edit-modal>
+	</div>
+</template>
+<script>
+import * as api from '@/api/hideDangerPoint';
+import OriTable from '@/components/OriTable';
+import EditModal from '@/components/EditModal';
+import { formatLevel } from '@/common/format';
+import menuTree from '@/components/MenuTree';
+export default {
+  components: {
+    OriTable,
+		EditModal,
+		menuTree
+  },
+  data(){
+    return {
+			form:{
+				inputLists:[
+					{label:'名称',v:'',idFor:'name'},
+					{label:'编号',v:'',idFor:'number'},
+					{label:'所属市州',v:'',idFor:'city'},
+					{label:'所属区县',v:'',idFor:'region'},
+					{label:'乡镇',v:'',idFor:'town'},
+					{label:'村',v:'',idFor:'village'},
+					{label:'经度',v:'',idFor:'long'},
+					{label:'纬度',v:'',idFor:'lat'},
+				],
+				type:'1',
+				types:[
+					{id:'1',value:'滑坡'},
+					{id:'2',value:'泥石流'},
+					{id:'3',value:'崩塌'},
+					{id:'4',value:'地面塌陷'},
+					{id:'5',value:'潜在不稳定斜坡'},
+					{id:'6',value:'其他'},
+				],
+				objPoints:[1,2],
+				objAll:[
+					{id:1,value:'分散农户'},
+					{id:2,value:'集聚区'},
+					{id:3,value:'学校'},
+					{id:4,value:'场镇'},
+					{id:5,value:'县城'},
+					{id:6,value:'公路'},
+					{id:7,value:'河道'},
+					{id:8,value:'其他'},
+				],
+				scale:[
+					{label:'长/高(m)',v:'',idFor:'high'},
+					{label:'宽(m)',v:'',idFor:'width'},
+					{label:'体积(万m^2)',v:'',idFor:'volume'},
+					{label:'流域面积(km2)',v:'',idFor:'area'},
+					{label:'沟长(km)',v:'',idFor:'length'},
+				],
+				text:''
+			},
+      columns: [
+				{
+					title:'隐患点名称',
+					key:'name',
+					minWidth:120
+				},
+				{
+					title:'类型',
+					key:'type',
+					minWidth:80
+				},
+				{
+					title:'地理位置',
+					key:'position',
+					minWidth:200
+				},
+				{
+					title:'威胁对象',
+					key:'object',
+					width:150
+				},
+        {
+          title: '操作',
+          key: 'operate',
+          minWidth: 210,
+          render: (h, param) => {
+            return h('div',[
+							h('Button', {
+							  props: {
+							    size: 'small',
+									type:'text'
+							  },
+							  on: {
+							    click: () => {
+							      this.modify(param.row);
+							    }
+							  }
+							}, '详情'),
+							h('Button', {
+							  props: {
+							    size: 'small',
+									type:'text'
+							  },
+							  on: {
+							    click: () => {
+							      this.resetPwd(param.row.id);
+							    }
+							  }
+							}, '定位'),
+							h('Button', {
+							  props: {
+							    size: 'small',
+									type:'text'
+							  },
+							  on: {
+							    click: () => {
+										console.log(param.row)
+										this.methodDeal = '编辑',
+										this.form = ''
+							      this.$store.commit('modal/openEdit');
+							    }
+							  }
+							}, '编辑'),
+							h('Button', {
+							  props: {
+							    size: 'small',
+									type:'text'
+							  },
+							  on: {
+							    click: () => {
+										this.$Modal.confirm({
+												title: '',
+												content: '<p>确认删除该隐患点？</p>',
+												center:true,
+												onOk: () => {
+														this.deletePoint(param.row.id);
+												}
+										});
+							      
+							    }
+							  }
+							}, '删除'),
+						]);
+          }
+        }
+      ],
+      dataSource: [],
+      loading: true,
+      adaptCount: 0,
+      currentPage: 1,
+      totalPage: 1,
+      pageSize: 10,
+			methodDeal:'新增',
+			isSubmit:false
+    };
+  },
+  created(){
+    this.getData()
+  },
+  mounted(){
+  },
+  destroyed(){
+  },
+  methods: {
+    getData(pageNum){
+      this.loading = true
+      api.getData({con:'as',pageNum: pageNum || 1, pageSize: this.pageSize})
+      .then(result => {
+          this.dataSource = result.dataList;
+          this.currentPage = pageNum;
+          this.totalPage = result.totalNum;
+          this.loading = false;
+          this.adaptCount++;
+      });
+    },
+		add(){
+			this.methodDeal = '编辑'
+			this.$store.commit('modal/openEdit');
+		},
+		leadIn(){
+			
+		},
+		leadOut(){
+			
+		},
+		search(){},
+		deletePoint(id){
+			api.deleteData(id).then(result=>{
+				console.log(233)
+			})
+		}
+  }
+}
+</script>
+<style scoped lang="less">
+	.form_main{
+		.title{
+			font-size: 15px;
+			margin: 9px 0 5px;
+			&.first{
+				margin-top:0
+			}
+		}
+		.input_box{
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: space-between;
+			margin-bottom: 5px;
+			li{
+				width:46%;
+				margin-bottom:5px ;
+				label{
+				  margin-bottom: 3px;
+					display: block;
+					font-size: 13px;
+				}
+			}
+		}
+		.label{
+			margin:8px 0 4px;
+			font-size: 13px;
+		}
+		.scale{
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: space-between;
+			margin-bottom: 5px;
+			li{
+				width:30%;
+				margin-bottom:5px ;
+				label{
+				  margin-bottom: 3px;
+					display: block;
+					font-size: 13px;
+				}
+			}
+		}
+	}
+</style>

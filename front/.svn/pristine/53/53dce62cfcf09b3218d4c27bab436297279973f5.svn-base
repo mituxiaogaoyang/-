@@ -1,0 +1,105 @@
+<template>
+  <div class="content_hide_points">
+  	<div class="bar_tree">
+  		<menu-tree></menu-tree>
+  	</div>
+  	<div class="content-box">
+		</div>
+	</div>
+</template>
+<script>
+import * as api from '@/api/monitorPoint';
+import OriTable from '@/components/OriTable';
+import { formatLevel } from '@/common/format';
+import menuTree from '@/components/MenuTree';
+export default {
+  components: {
+    OriTable,
+		menuTree
+  },
+  data(){
+    return {
+      columns: [
+        {
+          title: '序号',
+          type: 'index',
+          width: 60,
+          fixed: 'left'
+        },
+        {
+          title: '监测点编号',
+          key: 'monitorCode',
+          width: 160,
+          fixed: 'left'
+        },
+        {
+          title: '隐患点编号',
+          key: 'hideDangerCode',
+          width: 120,
+          fixed: 'left'
+        },
+        {
+          title: '监测仪器编号',
+          key: 'deviceCode',
+          width: 170,
+          fixed: 'left'
+        },
+        {
+          title: '监测点名称',
+          key: 'monitorName',
+          width: 120,
+          fixed: 'left'
+        },
+        {
+          title: '监测级别',
+          key: 'monitorLevel',
+          width: 100,
+          fixed: 'left',
+          render: (h, param) => {
+            return h('span', formatLevel(param.row.monitorLevel));
+          }
+        },
+        {
+          title: '监测方法',
+          key: 'monitorWay',
+          width: 100
+        },
+        {
+          title: '监测部位',
+          key: 'monitorPart',
+          width: 100
+        },
+
+      ],
+      dataSource: [],
+      loading: true,
+      adaptCount: 0,
+      currentPage: 1,
+      totalPage: 1,
+      pageSize: 10
+    };
+  },
+  created(){
+    this.getData();
+  },
+  mounted(){
+  },
+  destroyed(){
+  },
+  methods: {
+    getData(pageNum){
+      this.loading = true
+      api.getData({pageNum: pageNum || 1, pageSize: this.pageSize})
+      .then(result => {
+          this.dataSource = result.dataList;
+          this.currentPage = result.pageNum;
+          this.totalPage = result.totalNum;
+          this.loading = false;
+          this.adaptCount++;
+      });
+    }
+  }
+}
+</script>
+<style scoped lang="less">
+</style>
